@@ -47,6 +47,27 @@ export class BoardManager {
         appState.boards[appState.currentBoardIndex].lists[listIndex].name = newName;
     }
 
+    // Delete a list with confirmation
+    static deleteList(listIndex) {
+        const list = appState.boards[appState.currentBoardIndex].lists[listIndex];
+        const cardCount = list.cards.length;
+        
+        let confirmMessage = `Are you sure you want to delete the list "${list.name}"?`;
+        if (cardCount > 0) {
+            confirmMessage += `\n\nThis will permanently delete ${cardCount} card${cardCount === 1 ? '' : 's'}.`;
+        }
+        
+        if (confirm(confirmMessage)) {
+            appState.boards[appState.currentBoardIndex].lists.splice(listIndex, 1);
+            UIManager.renderBoard();
+        }
+    }
+
+    // Toggle list settings menu
+    static toggleListSettings(listIndex) {
+        UIManager.toggleListSettings(listIndex);
+    }
+
     // Upload background image
     static uploadBackground() {
         const backgroundUpload = document.getElementById('backgroundUpload');

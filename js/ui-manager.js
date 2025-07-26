@@ -71,6 +71,16 @@ export class UIManager {
         listDiv.innerHTML = `
             <div class="list-header">
                 <input type="text" value="${list.name}" onchange="updateListName(${listIndex}, this.value)" onblur="this.blur()">
+                <div class="list-settings">
+                    <button class="list-settings-btn" onclick="toggleListSettings(${listIndex})" title="List settings">⋯</button>
+                    <div class="list-settings-menu hidden" id="listSettings-${listIndex}">
+                        <button class="settings-option" onclick="deleteList(${listIndex})">
+                            <span class="settings-icon">🗑️</span>
+                            Delete List
+                        </button>
+                        <!-- Future customization options can go here -->
+                    </div>
+                </div>
             </div>
             <div class="cards-container" id="cards-${listIndex}">
                 ${list.cards.map((card, cardIndex) => UIManager.createCardHTML(card, listIndex, cardIndex)).join('')}
@@ -100,6 +110,31 @@ export class UIManager {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
         });
+        
+        // Close any open settings menus when clicking elsewhere
+        boardElement.addEventListener('click', (e) => {
+            if (!e.target.closest('.list-settings')) {
+                document.querySelectorAll('.list-settings-menu').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+    }
+
+    // Toggle list settings menu
+    static toggleListSettings(listIndex) {
+        const menu = document.getElementById(`listSettings-${listIndex}`);
+        if (!menu) return;
+        
+        // Close other open menus
+        document.querySelectorAll('.list-settings-menu').forEach(otherMenu => {
+            if (otherMenu !== menu) {
+                otherMenu.classList.add('hidden');
+            }
+        });
+        
+        // Toggle current menu
+        menu.classList.toggle('hidden');
     }
 
     // Drop zone event handlers
@@ -140,6 +175,7 @@ export class UIManager {
         // Clean up
         dropZone.classList.remove('drag-over');
     }
+
     // Drag and drop event handlers for lists
     static handleDragStart(e) {
         const listElement = e.currentTarget;
@@ -153,6 +189,11 @@ export class UIManager {
         // Add dragging class to board for styling
         const board = document.getElementById('board');
         if (board) board.classList.add('drag-active');
+        
+        // Close any open settings menus
+        document.querySelectorAll('.list-settings-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
     }
 
     static handleDragEnd(e) {

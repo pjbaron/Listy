@@ -43,6 +43,15 @@ function init() {
             }
         });
     }
+
+    // Close settings menus when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.list-settings')) {
+            document.querySelectorAll('.list-settings-menu').forEach(menu => {
+                menu.classList.add('hidden');
+            });
+        }
+    });
 }
 
 // Wait for DOM to be fully loaded
@@ -55,6 +64,8 @@ window.createList = BoardManager.createList;
 window.createBoard = BoardManager.createBoard;
 window.switchBoard = BoardManager.switchBoard;
 window.updateListName = BoardManager.updateListName;
+window.deleteList = BoardManager.deleteList;
+window.toggleListSettings = BoardManager.toggleListSettings;
 window.createCard = CardManager.createCard;
 window.openCard = CardManager.openCard;
 window.closeCardModal = CardManager.closeCardModal;

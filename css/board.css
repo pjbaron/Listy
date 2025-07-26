@@ -141,6 +141,10 @@
     background: #ebecf0;
     border-radius: 8px 8px 0 0;
     cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
 }
 
 .list-header:active {
@@ -152,7 +156,7 @@
     border: none;
     font-weight: 600;
     font-size: 14px;
-    width: 100%;
+    flex: 1;
     color: #172b4d;
     cursor: text;
 }
@@ -162,6 +166,75 @@
     background: white;
     padding: 4px;
     border-radius: 3px;
+}
+
+/* List Settings */
+.list-settings {
+    position: relative;
+    margin-left: 8px;
+}
+
+.list-settings-btn {
+    background: none;
+    border: none;
+    color: #5e6c84;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    transition: background-color 0.2s ease;
+}
+
+.list-settings-btn:hover {
+    background: rgba(9, 30, 66, 0.08);
+    color: #172b4d;
+}
+
+.list-settings-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 160px;
+    padding: 8px 0;
+    margin-top: 4px;
+}
+
+.list-settings-menu.hidden {
+    display: none;
+}
+
+.settings-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    color: #172b4d;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.settings-option:hover {
+    background: #f4f5f7;
+}
+
+.settings-option:hover .settings-icon {
+    transform: scale(1.1);
+}
+
+.settings-icon {
+    font-size: 16px;
+    transition: transform 0.2s ease;
 }
 
 /* Prevent dragging when input is focused */
@@ -175,6 +248,10 @@
 }
 
 .list:has(.list-header input:focus) .list-header input {
+    pointer-events: auto;
+}
+
+.list:has(.list-header input:focus) .list-settings {
     pointer-events: auto;
 }
 
@@ -211,7 +288,7 @@
     scroll-behavior: smooth;
 }
 
-/* Better touch support */
+/* Touch support */
 @media (hover: none) and (pointer: coarse) {
     .list {
         cursor: default;
@@ -220,4 +297,19 @@
     .list-header {
         cursor: default;
     }
+}
+
+/* Prevent settings menu from being cut off at board edges */
+.board {
+    overflow: visible;
+}
+
+.board-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Ensure settings menu appears above other elements */
+.list-settings-menu {
+    z-index: 1001;
 }
