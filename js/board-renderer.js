@@ -175,6 +175,18 @@ export class BoardRenderer {
         menu.classList.toggle('hidden');
     }
 
+    // Convert URLs in text to clickable links
+    static linkifyText(text) {
+        if (!text) return '';
+        
+        // Regular expression to match URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        
+        return text.replace(urlRegex, (url) => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${url}</a>`;
+        });
+    }
+
     // Create card HTML
     static createCardHTML(card, listIndex, cardIndex) {
         const labelsHTML = card.labels.map(color => `<div class="card-label" style="background: ${color}"></div>`).join('');
@@ -194,11 +206,19 @@ export class BoardRenderer {
                 `;
             }
         }
+
+        // Add description with clickable URLs if description exists
+        let descriptionHTML = '';
+        if (card.description && card.description.trim()) {
+            const linkedDescription = BoardRenderer.linkifyText(card.description);
+            descriptionHTML = `<div class="card-description">${linkedDescription}</div>`;
+        }
         
         return `
             <div class="card" onclick="openCard(${listIndex}, ${cardIndex})">
                 ${labelsHTML ? `<div class="card-labels">${labelsHTML}</div>` : ''}
                 <div class="card-title">${card.title}</div>
+                ${descriptionHTML}
                 ${progressHTML}
             </div>
         `;
