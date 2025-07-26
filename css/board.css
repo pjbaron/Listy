@@ -53,6 +53,40 @@
     cursor: grabbing;
 }
 
+/* Drop zones for gaps between lists */
+.drop-zone {
+    width: 20px;
+    min-width: 20px;
+    height: 100%;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+    width: 40px;
+    min-width: 40px;
+}
+
+.drop-zone.drag-over::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    background: #0079bf;
+    border-radius: 2px;
+    animation: pulse 1s infinite;
+}
+
+/* Hide drop zones when not dragging */
+.board:not(.drag-active) .drop-zone {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
 /* Drop indicators */
 .list.drag-over-left::before,
 .list.drag-over-right::after {

@@ -12,11 +12,22 @@ export class UIManager {
         const addButton = boardElement.querySelector('.add-list-btn');
         boardElement.innerHTML = '';
         
-        // Render lists
+        // Add board-level drag handlers
+        UIManager.setupBoardDragHandlers(boardElement);
+        
+        // Render lists with drop zones
         board.lists.forEach((list, listIndex) => {
+            // Add drop zone before each list
+            const dropZone = UIManager.createDropZone(listIndex);
+            boardElement.appendChild(dropZone);
+            
             const listElement = UIManager.createListElement(list, listIndex);
             boardElement.appendChild(listElement);
         });
+        
+        // Add final drop zone after all lists
+        const finalDropZone = UIManager.createDropZone(board.lists.length);
+        boardElement.appendChild(finalDropZone);
         
         // Re-add the add button
         if (addButton) {
@@ -69,7 +80,67 @@ export class UIManager {
         return listDiv;
     }
 
-    // Drag and drop event handlers
+    // Create a drop zone element
+    static createDropZone(position) {
+        const dropZone = document.createElement('div');
+        dropZone.className = 'drop-zone';
+        dropZone.dataset.position = position;
+        
+        dropZone.addEventListener('dragover', UIManager.handleDropZoneDragOver);
+        dropZone.addEventListener('dragenter', UIManager.handleDropZoneDragEnter);
+        dropZone.addEventListener('dragleave', UIManager.handleDropZoneDragLeave);
+        dropZone.addEventListener('drop', UIManager.handleDropZoneDrop);
+        
+        return dropZone;
+    }
+
+    // Setup board-level drag handlers
+    static setupBoardDragHandlers(boardElement) {
+        boardElement.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+    }
+
+    // Drop zone event handlers
+    static handleDropZoneDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    static handleDropZoneDragEnter(e) {
+        e.preventDefault();
+        const dropZone = e.currentTarget;
+        dropZone.classList.add('drag-over');
+    }
+
+    static handleDropZoneDragLeave(e) {
+        const dropZone = e.currentTarget;
+        if (!dropZone.contains(e.relatedTarget)) {
+            dropZone.classList.remove('drag-over');
+        }
+    }
+
+    static handleDropZoneDrop(e) {
+        e.preventDefault();
+        
+        const draggedListIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const dropZone = e.currentTarget;
+        const newPosition = parseInt(dropZone.dataset.position);
+        
+        // Calculate adjusted position based on original index
+        let adjustedPosition = newPosition;
+        if (draggedListIndex < newPosition) {
+            adjustedPosition = newPosition - 1;
+        }
+        
+        // Move the list
+        UIManager.moveList(draggedListIndex, adjustedPosition);
+        
+        // Clean up
+        dropZone.classList.remove('drag-over');
+    }
+    // Drag and drop event handlers for lists
     static handleDragStart(e) {
         const listElement = e.currentTarget;
         listElement.classList.add('dragging');
@@ -95,6 +166,11 @@ export class UIManager {
         // Remove all drag indicators
         document.querySelectorAll('.list').forEach(list => {
             list.classList.remove('drag-over-left', 'drag-over-right');
+        });
+        
+        // Remove drop zone indicators
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('drag-over');
         });
     }
 
