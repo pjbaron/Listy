@@ -60,6 +60,11 @@ export class UIManager {
         listDiv.draggable = true;
         listDiv.dataset.listIndex = listIndex;
         
+        // Set background color if specified
+        if (list.backgroundColor) {
+            listDiv.style.backgroundColor = list.backgroundColor;
+        }
+        
         // Add drag event listeners
         listDiv.addEventListener('dragstart', UIManager.handleDragStart);
         listDiv.addEventListener('dragend', UIManager.handleDragEnd);
@@ -69,16 +74,49 @@ export class UIManager {
         listDiv.addEventListener('drop', UIManager.handleDrop);
         
         listDiv.innerHTML = `
-            <div class="list-header">
+            <div class="list-header" ${list.backgroundColor ? `style="background-color: ${list.backgroundColor};"` : ''}>
                 <input type="text" value="${list.name}" onchange="updateListName(${listIndex}, this.value)" onblur="this.blur()">
                 <div class="list-settings">
                     <button class="list-settings-btn" onclick="toggleListSettings(${listIndex})" title="List settings">⋯</button>
                     <div class="list-settings-menu hidden" id="listSettings-${listIndex}">
-                        <button class="settings-option" onclick="deleteList(${listIndex})">
+                        <div class="settings-section">
+                            <div class="settings-section-title">Background Color</div>
+                            <div class="color-palette">
+                                <div class="color-option ${!list.backgroundColor ? 'selected' : ''}" 
+                                     style="background: #ebecf0;" 
+                                     onclick="setListBackgroundColor(${listIndex}, null)" 
+                                     title="Default"></div>
+                                <div class="color-option ${list.backgroundColor === '#fef7f7' ? 'selected' : ''}" 
+                                     style="background: #fef7f7;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#fef7f7')" 
+                                     title="Pastel Pink"></div>
+                                <div class="color-option ${list.backgroundColor === '#f0f9ff' ? 'selected' : ''}" 
+                                     style="background: #f0f9ff;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#f0f9ff')" 
+                                     title="Pastel Blue"></div>
+                                <div class="color-option ${list.backgroundColor === '#f0fff4' ? 'selected' : ''}" 
+                                     style="background: #f0fff4;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#f0fff4')" 
+                                     title="Pastel Green"></div>
+                                <div class="color-option ${list.backgroundColor === '#fffbf0' ? 'selected' : ''}" 
+                                     style="background: #fffbf0;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#fffbf0')" 
+                                     title="Pastel Yellow"></div>
+                                <div class="color-option ${list.backgroundColor === '#f5f0ff' ? 'selected' : ''}" 
+                                     style="background: #f5f0ff;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#f5f0ff')" 
+                                     title="Pastel Purple"></div>
+                                <div class="color-option ${list.backgroundColor === '#fff0f5' ? 'selected' : ''}" 
+                                     style="background: #fff0f5;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#fff0f5')" 
+                                     title="Pastel Lavender"></div>
+                            </div>
+                        </div>
+                        <div class="settings-divider"></div>
+                        <button class="settings-option delete-option" onclick="deleteList(${listIndex})">
                             <span class="settings-icon">🗑️</span>
                             Delete List
                         </button>
-                        <!-- Future customization options can go here -->
                     </div>
                 </div>
             </div>

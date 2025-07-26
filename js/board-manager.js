@@ -36,6 +36,7 @@ export class BoardManager {
         if (name) {
             appState.boards[appState.currentBoardIndex].lists.push({
                 name: name,
+                backgroundColor: null,
                 cards: []
             });
             UIManager.renderBoard();
@@ -66,6 +67,12 @@ export class BoardManager {
     // Toggle list settings menu
     static toggleListSettings(listIndex) {
         UIManager.toggleListSettings(listIndex);
+    }
+
+    // Set list background color
+    static setListBackgroundColor(listIndex, color) {
+        appState.boards[appState.currentBoardIndex].lists[listIndex].backgroundColor = color;
+        UIManager.renderBoard();
     }
 
     // Upload background image

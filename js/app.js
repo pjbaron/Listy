@@ -66,6 +66,7 @@ window.switchBoard = BoardManager.switchBoard;
 window.updateListName = BoardManager.updateListName;
 window.deleteList = BoardManager.deleteList;
 window.toggleListSettings = BoardManager.toggleListSettings;
+window.setListBackgroundColor = BoardManager.setListBackgroundColor;
 window.createCard = CardManager.createCard;
 window.openCard = CardManager.openCard;
 window.closeCardModal = CardManager.closeCardModal;
