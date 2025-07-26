@@ -1,0 +1,107 @@
+/* modal.css - Modal and form styles */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #172b4d;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #172b4d;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #0079bf;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.label-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.label-color {
+    width: 32px;
+    height: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.label-color.selected {
+    border-color: #0079bf;
+}

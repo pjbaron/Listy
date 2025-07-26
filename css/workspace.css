@@ -1,0 +1,91 @@
+/* workspace.css - Workspace view styles */
+
+.workspace-view {
+    padding: 40px;
+}
+
+.workspace-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.workspace-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.workspace-meta {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.starred-boards {
+    margin-bottom: 40px;
+}
+
+.starred-boards h2 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.boards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.board-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    padding: 16px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.board-card:hover {
+    transform: translateY(-2px);
+}
+
+.board-card-title {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.create-board-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.create-board-card .board-card-title {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.create-board-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.star-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+}
