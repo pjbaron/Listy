@@ -53,7 +53,23 @@ function setupEventListeners() {
     const boardsBtn = document.getElementById('boardsBtn');
     const backgroundBtn = document.getElementById('backgroundBtn');
     const labelSelector = document.getElementById('labelSelector');
+    // Background color selector event listener
+    const backgroundSelector = document.getElementById('cardBackgroundSelector');
     
+    if (backgroundSelector) {
+        backgroundSelector.addEventListener('click', (e) => {
+            if (e.target.classList.contains('background-color')) {
+                // Remove selected class from all background colors
+                backgroundSelector.querySelectorAll('.background-color').forEach(bg => {
+                    bg.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked color
+                e.target.classList.add('selected');
+            }
+        });
+    }
+
     if (boardsBtn) {
         boardsBtn.addEventListener('click', UIManager.showWorkspaceView);
     }

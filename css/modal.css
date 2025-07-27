@@ -105,3 +105,59 @@
 .label-color.selected {
     border-color: #0079bf;
 }
+
+/* Background color selector styles */
+.background-selector {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+    max-width: 300px;
+}
+
+.background-color {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.background-color:hover {
+    transform: scale(1.1);
+    border-color: #0079bf;
+}
+
+.background-color.selected {
+    border-color: #0079bf;
+    box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.2);
+}
+
+.background-color.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #0079bf;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 0 2px white;
+}
+
+/* Special styling for the default white option */
+.background-color[data-color="null"] {
+    background: #ffffff !important;
+    border: 2px solid #ddd;
+}
+
+.background-color[data-color="null"]:hover {
+    border-color: #0079bf;
+}
+
+.background-color[data-color="null"].selected {
+    border-color: #0079bf;
+    box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.2);
+}

@@ -10,7 +10,8 @@ export class CardManager {
                 title: title,
                 description: "",
                 labels: [],
-                checklists: []
+                checklists: [],
+                backgroundColor: null // Add background color property
             });
             UIManager.renderBoard();
         }
@@ -37,6 +38,14 @@ export class CardManager {
             });
         }
         
+        // Update background color selector
+        const backgroundSelector = document.getElementById('cardBackgroundSelector');
+        if (backgroundSelector) {
+            backgroundSelector.querySelectorAll('.background-color').forEach(bg => {
+                bg.classList.toggle('selected', appState.currentCardData.backgroundColor === bg.dataset.color);
+            });
+        }
+        
         CardManager.renderChecklists();
         if (cardModal) cardModal.classList.add('show');
     }
@@ -57,6 +66,7 @@ export class CardManager {
         const cardTitleInput = document.getElementById('cardTitleInput');
         const cardDescriptionInput = document.getElementById('cardDescriptionInput');
         const labelSelector = document.getElementById('labelSelector');
+        const backgroundSelector = document.getElementById('cardBackgroundSelector');
         
         if (cardTitleInput) appState.currentCardData.title = cardTitleInput.value;
         if (cardDescriptionInput) appState.currentCardData.description = cardDescriptionInput.value;
@@ -65,6 +75,12 @@ export class CardManager {
         if (labelSelector) {
             appState.currentCardData.labels = Array.from(labelSelector.querySelectorAll('.label-color.selected'))
                 .map(label => label.dataset.color);
+        }
+        
+        // Save background color
+        if (backgroundSelector) {
+            const selectedBg = backgroundSelector.querySelector('.background-color.selected');
+            appState.currentCardData.backgroundColor = selectedBg ? selectedBg.dataset.color : null;
         }
         
         // Save card

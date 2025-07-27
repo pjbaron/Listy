@@ -317,9 +317,12 @@ export class BoardRenderer {
             descriptionHTML = `<div class="card-description">${linkedDescription}</div>`;
         }
         
+        // Apply background color if set
+        const backgroundStyle = card.backgroundColor ? `style="background-color: ${card.backgroundColor};"` : '';
+        
         return `
             <div class="card" draggable="true" data-list-index="${listIndex}" data-card-index="${cardIndex}"
-                 ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)">
+                ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ${backgroundStyle}>
                 ${labelsHTML ? `<div class="card-labels">${labelsHTML}</div>` : ''}
                 <div class="card-title">${card.title}</div>
                 ${descriptionHTML}
