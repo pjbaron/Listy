@@ -1,4 +1,4 @@
-/* board.css - Board and list styles with drag-and-drop */
+/* board.css - Board and list styles with separate list and card drag-and-drop */
 
 .board-container {
     position: relative;
@@ -25,7 +25,7 @@
     gap: 20px;
     overflow-x: auto;
     overflow-y: hidden;
-    align-items: flex-start; /* This ensures lists align to the top */
+    align-items: flex-start;
 }
 
 .list {
@@ -33,26 +33,51 @@
     border-radius: 8px;
     width: 300px;
     min-width: 300px;
-    /* Removed max-height and flex properties to allow natural sizing */
     display: flex;
     flex-direction: column;
-    cursor: grab;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
-    /* Add max-height only for scrolling when content gets too tall */
     max-height: calc(100vh - 160px);
+    /* Remove draggable and cursor from list - only header should be draggable */
 }
 
-.list:active {
+/* List header specific drag styling */
+.list-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    color: #172b4d;
+    background: #ebecf0;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    flex-shrink: 0;
+    /* Only the header should be draggable for lists */
+    cursor: grab;
+}
+
+.list-header:active {
     cursor: grabbing;
 }
 
-/* Drag states */
+.list-header.draggable-header[draggable="true"] {
+    cursor: grab;
+}
+
+.list-header.draggable-header[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/* List drag states - only apply when header is being dragged */
 .list.dragging {
     opacity: 0.6;
     transform: rotate(2deg);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     z-index: 1000;
+}
+
+.list.dragging .list-header {
     cursor: grabbing;
 }
 
@@ -83,14 +108,14 @@
     animation: pulse 1s infinite;
 }
 
-/* Hide drop zones when not dragging */
+/* Hide drop zones when not dragging lists */
 .board:not(.drag-active) .drop-zone {
     width: 0;
     min-width: 0;
     overflow: hidden;
 }
 
-/* Drop indicators */
+/* Drop indicators for lists */
 .list.drag-over-left::before,
 .list.drag-over-right::after {
     content: '';
@@ -123,7 +148,7 @@
     }
 }
 
-/* Board state during drag */
+/* Board state during list drag */
 .board.drag-active {
     padding-left: 30px;
     padding-right: 30px;
@@ -135,25 +160,6 @@
 
 .board.drag-active .list:not(.dragging):hover {
     transform: scale(1.02);
-}
-
-.list-header {
-    padding: 12px 16px;
-    font-weight: 600;
-    color: #172b4d;
-    background: #ebecf0;
-    border-radius: 8px 8px 0 0;
-    cursor: grab;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    /* Ensure header doesn't shrink */
-    flex-shrink: 0;
-}
-
-.list-header:active {
-    cursor: grabbing;
 }
 
 .list-header input {
@@ -311,7 +317,7 @@
     pointer-events: auto;
 }
 
-.list:has(.list-header input:focus) {
+.list:has(.list-header input:focus) .list-header {
     cursor: default;
     pointer-events: none;
 }
@@ -324,19 +330,21 @@
     pointer-events: auto;
 }
 
+/* Cards container - enable card drag and drop */
 .cards-container {
-    /* Remove flex: 1 to allow natural sizing */
     overflow-y: auto;
     padding: 0 8px 8px 8px;
-    pointer-events: none;
-    /* Allow the container to grow/shrink with content */
     flex-shrink: 1;
-    /* Set a min-height so empty lists don't collapse completely */
     min-height: 20px;
+    /* Cards container should allow normal interaction */
+    pointer-events: auto;
 }
 
-.list:not(.dragging) .cards-container {
-    pointer-events: auto;
+/* Ensure cards container allows drops */
+.cards-container:empty::before {
+    content: '';
+    display: block;
+    height: 20px;
 }
 
 .add-list-btn {
@@ -350,7 +358,6 @@
     min-width: 300px;
     height: fit-content;
     transition: background-color 0.2s ease;
-    /* Ensure the button doesn't shrink */
     flex-shrink: 0;
 }
 
@@ -383,11 +390,11 @@
 
 /* Better touch support */
 @media (hover: none) and (pointer: coarse) {
-    .list {
+    .list-header {
         cursor: default;
     }
     
-    .list-header {
+    .list-header:active {
         cursor: default;
     }
 }

@@ -2,6 +2,7 @@ import { BoardManager } from './board-manager.js';
 import { CardManager } from './card-manager.js';
 import { UIManager } from './ui-manager.js';
 import { StorageManager } from './storage-manager.js';
+import { BoardRenderer } from './board-renderer.js';
 
 // Application state
 export const appState = {
@@ -403,6 +404,33 @@ window.createCard = (...args) => {
 window.openCard = CardManager.openCard;
 
 window.closeCardModal = CardManager.closeCardModal;
+
+window.handleCardDragStart = function(e) {
+    const card = e.currentTarget;
+    const listIndex = parseInt(card.dataset.listIndex);
+    const cardIndex = parseInt(card.dataset.cardIndex);
+    
+    card.classList.add('dragging');
+    
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/card', JSON.stringify({
+        listIndex: listIndex,
+        cardIndex: cardIndex
+    }));
+    
+    // Prevent the card click event from firing
+    e.stopPropagation();
+};
+
+window.handleCardDragEnd = function(e) {
+    const card = e.currentTarget;
+    card.classList.remove('dragging');
+};
+
+// Move cards programmatically (useful for other integrations)
+window.moveCard = function(sourceListIndex, sourceCardIndex, targetListIndex, targetCardIndex) {
+    BoardRenderer.moveCard(sourceListIndex, sourceCardIndex, targetListIndex, targetCardIndex);
+};
 
 window.saveCard = (...args) => {
     CardManager.saveCard(...args);

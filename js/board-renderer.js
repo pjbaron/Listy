@@ -58,7 +58,6 @@ export class BoardRenderer {
     static createListElement(list, listIndex) {
         const listDiv = document.createElement('div');
         listDiv.className = 'list';
-        listDiv.draggable = true;
         listDiv.dataset.listIndex = listIndex;
         
         // Set background color if specified
@@ -66,16 +65,8 @@ export class BoardRenderer {
             listDiv.style.backgroundColor = list.backgroundColor;
         }
         
-        // Add drag event listeners
-        listDiv.addEventListener('dragstart', BoardRenderer.handleDragStart);
-        listDiv.addEventListener('dragend', BoardRenderer.handleDragEnd);
-        listDiv.addEventListener('dragover', BoardRenderer.handleDragOver);
-        listDiv.addEventListener('dragenter', BoardRenderer.handleDragEnter);
-        listDiv.addEventListener('dragleave', BoardRenderer.handleDragLeave);
-        listDiv.addEventListener('drop', BoardRenderer.handleDrop);
-        
         listDiv.innerHTML = `
-            <div class="list-header" ${list.backgroundColor ? `style="background-color: ${list.backgroundColor};"` : ''}>
+            <div class="list-header draggable-header" ${list.backgroundColor ? `style="background-color: ${list.backgroundColor};"` : ''}>
                 <input type="text" value="${list.name}" onchange="updateListName(${listIndex}, this.value)" onblur="this.blur()">
                 <div class="list-settings">
                     <button class="list-settings-btn" onclick="toggleListSettings(${listIndex})" title="List settings">⋯</button>
@@ -126,10 +117,20 @@ export class BoardRenderer {
             </div>
             <button class="add-card-btn" onclick="createCard(${listIndex})">+ Add a card</button>
         `;
+
+        // Add list drag handlers only to the header
+        const listHeader = listDiv.querySelector('.list-header');
+        listHeader.draggable = true;
+        listHeader.addEventListener('dragstart', (e) => BoardRenderer.handleListDragStart(e, listDiv));
+        listHeader.addEventListener('dragend', BoardRenderer.handleListDragEnd);
+
+        // Setup card drag and drop for the cards container
+        BoardRenderer.setupCardDragAndDrop(listDiv, listIndex);
+        
         return listDiv;
     }
     
-    // Create a drop zone element
+    // Create a drop zone element for lists
     static createDropZone(position) {
         const dropZone = document.createElement('div');
         dropZone.className = 'drop-zone';
@@ -160,6 +161,107 @@ export class BoardRenderer {
         });
     }
 
+    static getDropPosition(cardsContainer, clientY) {
+        const allCards = Array.from(cardsContainer.querySelectorAll('.card:not(.dragging)'));
+        
+        // If no cards, insert at position 0
+        if (allCards.length === 0) {
+            return 0;
+        }
+        
+        // Check each card to find the insertion point
+        for (let i = 0; i < allCards.length; i++) {
+            const cardRect = allCards[i].getBoundingClientRect();
+            const cardMiddle = cardRect.top + cardRect.height / 2;
+            
+            // If mouse is above the middle of this card, insert before it
+            if (clientY < cardMiddle) {
+                return i;
+            }
+        }
+        
+        // If we get here, insert after all cards
+        return allCards.length;
+    }
+
+    // Setup card drag and drop functionality
+    static setupCardDragAndDrop(listElement, listIndex) {
+        const cardsContainer = listElement.querySelector('.cards-container');
+        
+        // Add dragover and drop handlers to the cards container
+        cardsContainer.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types.includes('application/card')) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                const draggingCard = document.querySelector('.card.dragging');
+                if (!draggingCard) return;
+                
+                // Get the position where the card should be inserted
+                const insertPosition = BoardRenderer.getDropPosition(cardsContainer, e.clientY);
+                const allCards = Array.from(cardsContainer.querySelectorAll('.card:not(.dragging)'));
+                
+                // Insert the dragging card at the correct visual position
+                if (insertPosition >= allCards.length) {
+                    // Insert at the end
+                    cardsContainer.appendChild(draggingCard);
+                } else {
+                    // Insert before the card at insertPosition
+                    cardsContainer.insertBefore(draggingCard, allCards[insertPosition]);
+                }
+            }
+        });
+        
+        // Improved drop event handler to replace in setupCardDragAndDrop
+        // Replace the existing drop event handler with this:
+        cardsContainer.addEventListener('drop', (e) => {
+            if (e.dataTransfer.types.includes('application/card')) {
+                e.preventDefault();
+                
+                const cardData = JSON.parse(e.dataTransfer.getData('application/card'));
+                const sourceListIndex = cardData.listIndex;
+                const sourceCardIndex = cardData.cardIndex;
+                
+                // Get the drop position based on mouse Y coordinate
+                const newCardIndex = BoardRenderer.getDropPosition(cardsContainer, e.clientY);
+                
+                // Only move if the position actually changed
+                if (sourceListIndex !== listIndex || sourceCardIndex !== newCardIndex) {
+                    BoardRenderer.moveCard(sourceListIndex, sourceCardIndex, listIndex, newCardIndex);
+                }
+            }
+        });
+
+        // Make cards draggable and add event listeners
+        cardsContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.card')) {
+                const card = e.target.closest('.card');
+                const cardIndex = Array.from(cardsContainer.children).indexOf(card);
+                
+                // Don't open card if clicking on a link
+                if (!e.target.closest('a')) {
+                    window.openCard(listIndex, cardIndex);
+                }
+            }
+        });
+    }
+
+    // Get the element after which the dragged card should be inserted
+    static getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
     // Toggle list settings menu
     static toggleListSettings(listIndex) {
         const menu = document.getElementById(`listSettings-${listIndex}`);
@@ -188,7 +290,7 @@ export class BoardRenderer {
         });
     }
 
-    // Create card HTML
+    // Create card HTML with drag functionality
     static createCardHTML(card, listIndex, cardIndex) {
         const labelsHTML = card.labels.map(color => `<div class="card-label" style="background: ${color}"></div>`).join('');
         
@@ -216,13 +318,31 @@ export class BoardRenderer {
         }
         
         return `
-            <div class="card" onclick="openCard(${listIndex}, ${cardIndex})">
+            <div class="card" draggable="true" data-list-index="${listIndex}" data-card-index="${cardIndex}"
+                 ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)">
                 ${labelsHTML ? `<div class="card-labels">${labelsHTML}</div>` : ''}
                 <div class="card-title">${card.title}</div>
                 ${descriptionHTML}
                 ${progressHTML}
             </div>
         `;
+    }
+
+    static moveCard(sourceListIndex, sourceCardIndex, targetListIndex, targetCardIndex) {
+        const board = appState.boards[appState.currentBoardIndex];
+        
+        // 1. Remove the card from the source list and store it.
+        const [movedCard] = board.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
+        
+        // 2. Insert the stored card into the target list at the target position.
+        // This single block of logic correctly handles both same-list and cross-list moves.
+        board.lists[targetListIndex].cards.splice(targetCardIndex, 0, movedCard);
+        
+        // Re-render the board to reflect the changes.
+        BoardRenderer.renderBoard();
+        
+        // Trigger auto-save.
+        triggerAutoSave();
     }
 
     // Move list from one position to another
@@ -238,54 +358,15 @@ export class BoardRenderer {
         triggerAutoSave();
     }
 
-    // Drop zone event handlers
-    static handleDropZoneDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
-
-    static handleDropZoneDragEnter(e) {
-        e.preventDefault();
-        const dropZone = e.currentTarget;
-        dropZone.classList.add('drag-over');
-    }
-
-    static handleDropZoneDragLeave(e) {
-        const dropZone = e.currentTarget;
-        if (!dropZone.contains(e.relatedTarget)) {
-            dropZone.classList.remove('drag-over');
-        }
-    }
-
-    static handleDropZoneDrop(e) {
-        e.preventDefault();
-        
-        const draggedListIndex = parseInt(e.dataTransfer.getData('text/plain'));
-        const dropZone = e.currentTarget;
-        const newPosition = parseInt(dropZone.dataset.position);
-        
-        // Calculate adjusted position based on original index
-        let adjustedPosition = newPosition;
-        if (draggedListIndex < newPosition) {
-            adjustedPosition = newPosition - 1;
-        }
-        
-        // Move the list
-        BoardRenderer.moveList(draggedListIndex, adjustedPosition);
-        
-        // Clean up
-        dropZone.classList.remove('drag-over');
-    }
-
-    // Drag and drop event handlers for lists
-    static handleDragStart(e) {
-        const listElement = e.currentTarget;
+    // List drag handlers
+    static handleListDragStart(e, listElement) {
         listElement.classList.add('dragging');
         
         // Store the index of the dragged list
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', listElement.outerHTML);
         e.dataTransfer.setData('text/plain', listElement.dataset.listIndex);
+        e.dataTransfer.setData('application/list', listElement.dataset.listIndex);
         
         // Add dragging class to board for styling
         const board = document.getElementById('board');
@@ -297,9 +378,11 @@ export class BoardRenderer {
         });
     }
 
-    static handleDragEnd(e) {
-        const listElement = e.currentTarget;
-        listElement.classList.remove('dragging');
+    static handleListDragEnd(e) {
+        const listElement = e.currentTarget.closest('.list');
+        if (listElement) {
+            listElement.classList.remove('dragging');
+        }
         
         // Remove dragging class from board
         const board = document.getElementById('board');
@@ -316,73 +399,71 @@ export class BoardRenderer {
         });
     }
 
-    static handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
+    // Drop zone event handlers for lists
+    static handleDropZoneDragOver(e) {
+        if (e.dataTransfer.types.includes('application/list')) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
     }
 
-    static handleDragEnter(e) {
-        e.preventDefault();
-        const listElement = e.currentTarget;
-        const draggingElement = document.querySelector('.dragging');
-        
-        if (listElement !== draggingElement && !listElement.classList.contains('dragging')) {
-            // Determine which side of the list we're hovering over
-            const rect = listElement.getBoundingClientRect();
-            const midpoint = rect.left + rect.width / 2;
-            const mouseX = e.clientX;
+    static handleDropZoneDragEnter(e) {
+        if (e.dataTransfer.types.includes('application/list')) {
+            e.preventDefault();
+            const dropZone = e.currentTarget;
+            dropZone.classList.add('drag-over');
+        }
+    }
+
+    static handleDropZoneDragLeave(e) {
+        const dropZone = e.currentTarget;
+        if (!dropZone.contains(e.relatedTarget)) {
+            dropZone.classList.remove('drag-over');
+        }
+    }
+
+    static handleDropZoneDrop(e) {
+        if (e.dataTransfer.types.includes('application/list')) {
+            e.preventDefault();
             
-            // Remove existing drag indicators
-            listElement.classList.remove('drag-over-left', 'drag-over-right');
+            const draggedListIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const dropZone = e.currentTarget;
+            const newPosition = parseInt(dropZone.dataset.position);
             
-            // Add appropriate drag indicator
-            if (mouseX < midpoint) {
-                listElement.classList.add('drag-over-left');
-            } else {
-                listElement.classList.add('drag-over-right');
+            // Calculate adjusted position based on original index
+            let adjustedPosition = newPosition;
+            if (draggedListIndex < newPosition) {
+                adjustedPosition = newPosition - 1;
             }
+            
+            // Move the list
+            BoardRenderer.moveList(draggedListIndex, adjustedPosition);
+            
+            // Clean up
+            dropZone.classList.remove('drag-over');
         }
-    }
-
-    static handleDragLeave(e) {
-        const listElement = e.currentTarget;
-        // Only remove indicators if we're leaving the element entirely
-        if (!listElement.contains(e.relatedTarget)) {
-            listElement.classList.remove('drag-over-left', 'drag-over-right');
-        }
-    }
-
-    static handleDrop(e) {
-        e.preventDefault();
-        
-        const draggedListIndex = parseInt(e.dataTransfer.getData('text/plain'));
-        const targetListElement = e.currentTarget;
-        const targetListIndex = parseInt(targetListElement.dataset.listIndex);
-        
-        if (draggedListIndex === targetListIndex) return;
-        
-        // Determine drop position
-        const rect = targetListElement.getBoundingClientRect();
-        const midpoint = rect.left + rect.width / 2;
-        const mouseX = e.clientX;
-        const insertBefore = mouseX < midpoint;
-        
-        // Calculate new position
-        let newPosition = targetListIndex;
-        if (!insertBefore && draggedListIndex < targetListIndex) {
-            newPosition = targetListIndex;
-        } else if (!insertBefore && draggedListIndex > targetListIndex) {
-            newPosition = targetListIndex + 1;
-        } else if (insertBefore && draggedListIndex > targetListIndex) {
-            newPosition = targetListIndex;
-        } else if (insertBefore && draggedListIndex < targetListIndex) {
-            newPosition = targetListIndex - 1;
-        }
-        
-        // Move the list in the data structure
-        BoardRenderer.moveList(draggedListIndex, newPosition);
-        
-        // Clean up drag indicators
-        targetListElement.classList.remove('drag-over-left', 'drag-over-right');
     }
 }
+
+// Global functions for card drag and drop
+window.handleCardDragStart = function(e) {
+    const card = e.currentTarget;
+    const listIndex = parseInt(card.dataset.listIndex);
+    const cardIndex = parseInt(card.dataset.cardIndex);
+    
+    card.classList.add('dragging');
+    
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('application/card', JSON.stringify({
+        listIndex: listIndex,
+        cardIndex: cardIndex
+    }));
+    
+    // Prevent the card click event from firing
+    e.stopPropagation();
+};
+
+window.handleCardDragEnd = function(e) {
+    const card = e.currentTarget;
+    card.classList.remove('dragging');
+};
