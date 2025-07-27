@@ -78,9 +78,13 @@ export class StorageManager {
             const dataStr = JSON.stringify(boards, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             
+            // Create timestamp with date, hour, and minutes
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 16).replace('T', '_').replace(':', '-');
+            
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = `listy-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `listy-backup-${timestamp}.json`;
             
             // Trigger download without showing file dialog
             document.body.appendChild(link);
