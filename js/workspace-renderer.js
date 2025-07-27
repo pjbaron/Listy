@@ -17,7 +17,6 @@ export class WorkspaceRenderer {
             }
             boardCard.innerHTML = `
                 <div class="board-card-title">${board.name}</div>
-                <button class="star-icon">⭐</button>
             `;
             boardCard.onclick = () => window.switchBoard(index);
             gridElement.appendChild(boardCard);

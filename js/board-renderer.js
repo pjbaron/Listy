@@ -36,7 +36,7 @@ export class BoardRenderer {
             // Create new add button if it doesn't exist
             const newAddButton = document.createElement('button');
             newAddButton.className = 'add-list-btn';
-            newAddButton.textContent = '+ Add another list';
+            newAddButton.textContent = '+ Add a list';
             newAddButton.onclick = () => window.createList();
             boardElement.appendChild(newAddButton);
         }
@@ -86,29 +86,29 @@ export class BoardRenderer {
                                      style="background: #ebecf0;" 
                                      onclick="setListBackgroundColor(${listIndex}, null)" 
                                      title="Default"></div>
-                                <div class="color-option ${list.backgroundColor === '#fef7f7' ? 'selected' : ''}" 
-                                     style="background: #fef7f7;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#fef7f7')" 
+                                <div class="color-option ${list.backgroundColor === '#fce4e4' ? 'selected' : ''}" 
+                                     style="background: #fce4e4;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#fce4e4')" 
                                      title="Pastel Pink"></div>
-                                <div class="color-option ${list.backgroundColor === '#f0f9ff' ? 'selected' : ''}" 
-                                     style="background: #f0f9ff;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#f0f9ff')" 
+                                <div class="color-option ${list.backgroundColor === '#e0f2fe' ? 'selected' : ''}" 
+                                     style="background: #e0f2fe;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#e0f2fe')" 
                                      title="Pastel Blue"></div>
-                                <div class="color-option ${list.backgroundColor === '#f0fff4' ? 'selected' : ''}" 
-                                     style="background: #f0fff4;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#f0fff4')" 
+                                <div class="color-option ${list.backgroundColor === '#e8f5e8' ? 'selected' : ''}" 
+                                     style="background: #e8f5e8;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#e8f5e8')" 
                                      title="Pastel Green"></div>
-                                <div class="color-option ${list.backgroundColor === '#fffbf0' ? 'selected' : ''}" 
-                                     style="background: #fffbf0;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#fffbf0')" 
+                                <div class="color-option ${list.backgroundColor === '#fff4e6' ? 'selected' : ''}" 
+                                     style="background: #fff4e6;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#fff4e6')" 
                                      title="Pastel Yellow"></div>
-                                <div class="color-option ${list.backgroundColor === '#f5f0ff' ? 'selected' : ''}" 
-                                     style="background: #f5f0ff;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#f5f0ff')" 
+                                <div class="color-option ${list.backgroundColor === '#f0e6ff' ? 'selected' : ''}" 
+                                     style="background: #f0e6ff;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#f0e6ff')" 
                                      title="Pastel Purple"></div>
-                                <div class="color-option ${list.backgroundColor === '#fff0f5' ? 'selected' : ''}" 
-                                     style="background: #fff0f5;" 
-                                     onclick="setListBackgroundColor(${listIndex}, '#fff0f5')" 
+                                <div class="color-option ${list.backgroundColor === '#ffe6f0' ? 'selected' : ''}" 
+                                     style="background: #ffe6f0;" 
+                                     onclick="setListBackgroundColor(${listIndex}, '#ffe6f0')" 
                                      title="Pastel Lavender"></div>
                             </div>
                         </div>
@@ -127,7 +127,7 @@ export class BoardRenderer {
         `;
         return listDiv;
     }
-
+    
     // Create a drop zone element
     static createDropZone(position) {
         const dropZone = document.createElement('div');

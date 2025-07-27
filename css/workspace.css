@@ -11,16 +11,6 @@
     margin-bottom: 40px;
 }
 
-.starred-boards {
-    margin-bottom: 40px;
-}
-
-.starred-boards h2 {
-    color: white;
-    margin-bottom: 20px;
-    font-size: 18px;
-}
-
 .boards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -64,17 +54,4 @@
 
 .create-board-card:hover {
     background: rgba(255, 255, 255, 0.2);
-}
-
-.star-icon {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    cursor: pointer;
 }

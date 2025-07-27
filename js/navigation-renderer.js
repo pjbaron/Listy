@@ -18,7 +18,7 @@ export class NavigationRenderer {
         
         const addButton = document.createElement('button');
         addButton.className = 'add-board-btn';
-        addButton.textContent = '+ Add another board';
+        addButton.textContent = '+ Add a board';
         addButton.onclick = () => window.createBoard();
         tabsElement.appendChild(addButton);
     }
