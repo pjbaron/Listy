@@ -1,4 +1,5 @@
 import { appState } from './app.js';
+import { triggerAutoSave } from './app.js';
 
 export class BoardRenderer {
     // Render the current board
@@ -232,6 +233,9 @@ export class BoardRenderer {
         
         // Re-render the board
         BoardRenderer.renderBoard();
+        
+        // Trigger auto-save after moving lists
+        triggerAutoSave();
     }
 
     // Drop zone event handlers

@@ -1,0 +1,162 @@
+// storage-manager.js - Handle data persistence with localStorage
+
+export class StorageManager {
+    static STORAGE_KEY = 'listy-boards-data';
+    static SETTINGS_KEY = 'listy-settings';
+
+    // Load boards from localStorage
+    static loadBoards() {
+        try {
+            const stored = localStorage.getItem(StorageManager.STORAGE_KEY);
+            if (stored) {
+                const data = JSON.parse(stored);
+                return Array.isArray(data) ? data : [];
+            }
+        } catch (error) {
+            console.warn('Error loading boards from localStorage:', error);
+        }
+        return [];
+    }
+
+    // Save boards to localStorage
+    static saveBoards(boards) {
+        try {
+            localStorage.setItem(StorageManager.STORAGE_KEY, JSON.stringify(boards));
+            return true;
+        } catch (error) {
+            console.error('Error saving boards to localStorage:', error);
+            return false;
+        }
+    }
+
+    // Load user settings
+    static loadSettings() {
+        try {
+            const stored = localStorage.getItem(StorageManager.SETTINGS_KEY);
+            if (stored) {
+                return JSON.parse(stored);
+            }
+        } catch (error) {
+            console.warn('Error loading settings from localStorage:', error);
+        }
+        return {
+            autoSave: true,
+            lastOpenBoard: 0
+        };
+    }
+
+    // Save user settings
+    static saveSettings(settings) {
+        try {
+            localStorage.setItem(StorageManager.SETTINGS_KEY, JSON.stringify(settings));
+            return true;
+        } catch (error) {
+            console.error('Error saving settings to localStorage:', error);
+            return false;
+        }
+    }
+
+    // Auto-save functionality with debouncing
+    static setupAutoSave(appState, delay = 1000) {
+        let saveTimeout;
+        
+        const debouncedSave = () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                StorageManager.saveBoards(appState.boards);
+                console.log('Auto-saved boards');
+            }, delay);
+        };
+
+        // Return the debounced save function for manual calls
+        return debouncedSave;
+    }
+
+    // Export data as JSON file for backup
+    static exportData(boards) {
+        try {
+            const dataStr = JSON.stringify(boards, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `listy-backup-${new Date().toISOString().split('T')[0]}.json`;
+            
+            // Trigger download without showing file dialog
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up the URL object
+            URL.revokeObjectURL(link.href);
+            
+            return true;
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            return false;
+        }
+    }
+
+    // Import data from JSON file
+    static importData(file) {
+        return new Promise((resolve, reject) => {
+            if (!file || file.type !== 'application/json') {
+                reject(new Error('Please select a valid JSON file'));
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate the imported data structure
+                    if (Array.isArray(importedData)) {
+                        resolve(importedData);
+                    } else {
+                        reject(new Error('Invalid data format'));
+                    }
+                } catch (error) {
+                    reject(new Error('Failed to parse JSON file'));
+                }
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
+
+    // Clear all stored data
+    static clearAllData() {
+        try {
+            localStorage.removeItem(StorageManager.STORAGE_KEY);
+            localStorage.removeItem(StorageManager.SETTINGS_KEY);
+            return true;
+        } catch (error) {
+            console.error('Error clearing data:', error);
+            return false;
+        }
+    }
+
+    // Get storage usage information
+    static getStorageInfo() {
+        try {
+            const boardsData = localStorage.getItem(StorageManager.STORAGE_KEY) || '';
+            const settingsData = localStorage.getItem(StorageManager.SETTINGS_KEY) || '';
+            
+            return {
+                boardsSize: new Blob([boardsData]).size,
+                settingsSize: new Blob([settingsData]).size,
+                totalSize: new Blob([boardsData + settingsData]).size,
+                boardCount: JSON.parse(boardsData || '[]').length
+            };
+        } catch (error) {
+            console.error('Error getting storage info:', error);
+            return {
+                boardsSize: 0,
+                settingsSize: 0,
+                totalSize: 0,
+                boardCount: 0
+            };
+        }
+    }
+}
