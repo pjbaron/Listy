@@ -15,6 +15,245 @@ export const appState = {
     autoSave: null // Will hold the auto-save function
 };
 
+// The help content in markdown format
+const HELP_CONTENT = `
+A browser-based task management application.
+
+Organize your projects with boards, lists, and cards with full drag-and-drop functionality.
+
+
+## Keyboard Shortcuts
+
+- **Ctrl/Cmd + S**: Manual save (though auto-save is always active)
+- **Ctrl/Cmd + E**: Export backup
+
+## Board Management
+
+### Creating Boards
+- Click the "+ Add a board" button in the board tabs or "Create new board" in workspace view
+- Enter a name for your new board
+- Your new board will be created and opened automatically
+
+### Switching Between Boards
+- Click on any board tab at the top to switch to that board
+- Click "Boards" button to see all boards in workspace view
+
+### Board Options
+In workspace view, hover over any board card to see the options menu (⋯):
+- **Rename Board**: Change the board name
+- **Duplicate Board**: Create a copy of the entire board with all lists and cards
+- **Delete Board**: Permanently remove the board (requires confirmation)
+
+### Board Backgrounds
+- Click the "Background" button in the header
+- Select an image file from your computer
+- The image will be applied as the board background
+
+## List Management
+
+### Creating Lists
+- Click the "+ Add a list" button on any board
+- Enter a name for your list
+- The list will be added to the right side of your board
+
+### List Options
+Click the three dots (⋯) in any list header to access:
+
+#### Background Colors
+- Choose a color.
+
+#### List Actions
+- **Delete List**: Remove the list and all its cards (requires confirmation)
+
+### Editing List Names
+- Click on any list name to edit it inline
+- Press Enter or click outside to save changes
+
+### Reordering Lists
+- Drag lists by their headers to reorder them
+- Drop zones will appear between lists during dragging
+- Lists will automatically save their new positions
+
+## Card Management
+
+### Creating Cards
+- Click "+ Add a card" at the bottom of any list
+- Enter a title for your card
+- The card will be added to the bottom of the list
+
+### Editing Cards
+Click on any card to open the card editor with these options:
+
+#### Basic Information
+- **Title**: Edit the card title
+- **Description**: Add detailed description, URLs will be clickable
+
+#### Labels
+- Choose from 6 different colored category markers
+- Multiple markers can be applied to each card
+- Markers appear as a list of colored bars at the top of cards
+
+#### Background Colors
+- Choose from 12 background colors for each card
+- Background colors help categorize and prioritize cards visually
+
+#### Checklists
+- **Add Checklist**: Create new checklists within cards
+- **Add Items**: Add individual checklist items with text descriptions
+- **Check/Uncheck**: Click checkboxes to mark items as complete
+- **Progress Tracking**: Visual progress bar shows completion percentage
+- **Delete Items**: Remove individual checklist items or entire checklists
+- **Multiple Checklists**: Add multiple checklists per card for complex tasks
+
+#### Buttons
+- **Save**: Save all changes and close the card editor
+- **Delete Card**: Permanently remove the card from the list (verification required)
+
+### Moving Cards
+- **Drag & Drop**: Drag cards between lists or reorder within the same list
+- **Visual Feedback**: Cards show dragging state and drop zones highlight during moves
+- **Auto-Save**: Card positions are automatically saved after moving
+
+## Data Management
+
+### Automatic Saving
+- All changes are automatically saved to your browser's local storage
+- No manual save required - your data persists between sessions
+
+### Export Backup
+- Click "Export Backup" in the header
+- Downloads a JSON file with timestamp (e.g., \`listy-backup-2025-01-27_14-30.json\`)
+- Contains all boards, lists, cards, and settings
+- Use for backup or transferring data between devices
+
+### Import Backup
+- Click "Import Backup" in the header
+- Select a previously exported JSON backup file
+- Confirms before replacing current data
+- Restores all boards and settings from backup
+
+### Storage Information
+- Click "Storage Info" to view current usage
+- Shows number of boards and storage size
+- Displays last save timestamp
+
+## Workspace View
+
+### Accessing Workspace
+- Click "Boards" button in the header to see all boards
+- Shows a grid view of all your boards
+
+### Board Grid Features
+- **Visual Preview**: Each board shows as a card with background image
+- **Quick Access**: Click any board to open it
+- **Board Menu**: Hover over boards to access management options
+- **Create New**: Click "Create new board" card to add boards
+
+### Browser Compatibility
+- Works in all modern browsers
+- Requires JavaScript to be enabled
+- Local storage must be available for data persistence`;
+
+// Simple markdown to HTML converter
+function markdownToHtml(markdown) {
+    let html = markdown;
+    
+    // Headers
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+    
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Code (backticks)
+    html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // Lists - handle nested structure
+    const lines = html.split('\n');
+    let inList = false;
+    let processedLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const isListItem = line.match(/^- (.*)$/);
+        
+        if (isListItem) {
+            if (!inList) {
+                processedLines.push('<ul>');
+                inList = true;
+            }
+            processedLines.push(`<li>${isListItem[1]}</li>`);
+        } else {
+            if (inList) {
+                processedLines.push('</ul>');
+                inList = false;
+            }
+            processedLines.push(line);
+        }
+    }
+    
+    if (inList) {
+        processedLines.push('</ul>');
+    }
+    
+    html = processedLines.join('\n');
+    
+    // Paragraphs - convert double line breaks to paragraphs
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+    
+    // Clean up empty paragraphs and fix structure
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>(<h[1-6]>)/g, '$1');
+    html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<ul>)/g, '$1');
+    html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+    
+    return html;
+}
+
+// Show help modal
+function showHelpModal() {
+    const helpModal = document.getElementById('helpModal');
+    const helpContent = document.getElementById('helpContent');
+    
+    if (helpModal && helpContent) {
+        helpContent.innerHTML = markdownToHtml(HELP_CONTENT);
+        helpModal.classList.add('show');
+    }
+}
+
+// Close help modal
+function closeHelpModal() {
+    const helpModal = document.getElementById('helpModal');
+    if (helpModal) {
+        helpModal.classList.remove('show');
+    }
+}
+
+// Add help button to header (call this in your init function)
+function addHelpButton() {
+    const boardActions = document.querySelector('.board-actions');
+    if (!boardActions) return;
+    
+    // Create help button
+    const helpBtn = document.createElement('button');
+    helpBtn.className = 'btn';
+    helpBtn.textContent = 'Help';
+    helpBtn.title = 'View user guide';
+    helpBtn.style.marginLeft = '20px';    
+    helpBtn.onclick = showHelpModal;
+    
+    boardActions.appendChild(helpBtn);
+}
+
+// Export global functions
+window.showHelpModal = showHelpModal;
+window.closeHelpModal = closeHelpModal;
+window.addHelpButton = addHelpButton;
+
 // Initialize the application
 function init() {
     // Load saved data
@@ -55,7 +294,7 @@ function setupEventListeners() {
     const labelSelector = document.getElementById('labelSelector');
     // Background color selector event listener
     const backgroundSelector = document.getElementById('cardBackgroundSelector');
-    
+
     if (backgroundSelector) {
         backgroundSelector.addEventListener('click', (e) => {
             if (e.target.classList.contains('background-color')) {
@@ -150,18 +389,13 @@ function addDataManagementButtons() {
     storageBtn.textContent = 'Storage Info';
     storageBtn.title = 'View storage usage';
     storageBtn.onclick = showStorageInfo;
-    
-    // Insert before the Share button
-    const shareBtn = boardActions.querySelector('button:last-child');
-    if (shareBtn) {
-        boardActions.insertBefore(exportBtn, shareBtn);
-        boardActions.insertBefore(importBtn, shareBtn);
-        boardActions.insertBefore(storageBtn, shareBtn);
-    } else {
-        boardActions.appendChild(exportBtn);
-        boardActions.appendChild(importBtn);
-        boardActions.appendChild(storageBtn);
-    }
+
+    boardActions.appendChild(exportBtn);
+    boardActions.appendChild(importBtn);
+    boardActions.appendChild(storageBtn);
+
+    // Help button
+    addHelpButton();
 }
 
 // Save data manually

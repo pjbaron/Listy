@@ -21,7 +21,7 @@
             <span>Listy Workspace</span>
         </div>
         <div class="board-actions">
-            <button class="btn" id="boardsBtn">Boards</button>
+            <button class="btn" id="boardsBtn" style="margin-right: 20px;">Boards</button>
             <button class="btn" id="backgroundBtn">Change Background</button>
             <!-- Export, Import, and Storage Info buttons will be added by JavaScript -->
         </div>
@@ -149,6 +149,19 @@
                     <button class="btn-secondary" onclick="closeCardModal()">Cancel</button>
                     <button class="btn-danger" onclick="deleteCard()" style="float: right;">Delete</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 class="modal-title">Listy - User Guide</h2>
+                <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+            </div>
+            <div class="modal-body help-content" id="helpContent">
+                <!-- Content will be populated by JavaScript -->
             </div>
         </div>
     </div>
