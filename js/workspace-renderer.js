@@ -15,10 +15,37 @@ export class WorkspaceRenderer {
                 boardCard.style.backgroundImage = `url(${board.background})`;
                 boardCard.style.backgroundSize = 'cover';
             }
+            
+            // Add board management menu
             boardCard.innerHTML = `
                 <div class="board-card-title">${board.name}</div>
+                <div class="board-card-menu">
+                    <button class="board-menu-btn" onclick="event.stopPropagation(); toggleBoardMenu(${index})" title="Board options">⋯</button>
+                    <div class="board-menu-dropdown hidden" id="boardMenu-${index}">
+                        <button class="board-menu-option" onclick="event.stopPropagation(); renameBoardFromGrid(${index})">
+                            <span class="menu-icon">✏️</span>
+                            Rename Board
+                        </button>
+                        <button class="board-menu-option" onclick="event.stopPropagation(); duplicateBoardFromGrid(${index})">
+                            <span class="menu-icon">📋</span>
+                            Duplicate Board
+                        </button>
+                        <div class="menu-divider"></div>
+                        <button class="board-menu-option delete-option" onclick="event.stopPropagation(); deleteBoardFromGrid(${index})">
+                            <span class="menu-icon">🗑️</span>
+                            Delete Board
+                        </button>
+                    </div>
+                </div>
             `;
-            boardCard.onclick = () => window.switchBoard(index);
+            
+            // Add click handler for opening the board
+            boardCard.addEventListener('click', (e) => {
+                if (!e.target.closest('.board-card-menu')) {
+                    window.switchBoard(index);
+                }
+            });
+            
             gridElement.appendChild(boardCard);
         });
 

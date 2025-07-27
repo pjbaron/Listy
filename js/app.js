@@ -76,6 +76,13 @@ function setupEventListeners() {
                 menu.classList.add('hidden');
             });
         }
+        
+        // Close board menus when clicking outside
+        if (!e.target.closest('.board-card-menu')) {
+            document.querySelectorAll('.board-menu-dropdown').forEach(menu => {
+                menu.classList.add('hidden');
+            });
+        }
     });
 
     // Add keyboard shortcuts
@@ -284,6 +291,44 @@ export function updateSettings(newSettings) {
     StorageManager.saveSettings(appState.settings);
 }
 
+// Toggle board menu in workspace view
+function toggleBoardMenu(boardIndex) {
+    const menu = document.getElementById(`boardMenu-${boardIndex}`);
+    if (!menu) return;
+    
+    // Close other open menus
+    document.querySelectorAll('.board-menu-dropdown').forEach(otherMenu => {
+        if (otherMenu !== menu) {
+            otherMenu.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current menu
+    menu.classList.toggle('hidden');
+}
+
+// Board management functions for workspace grid
+function deleteBoardFromGrid(boardIndex) {
+    const success = BoardManager.deleteBoard(boardIndex);
+    if (success) {
+        triggerAutoSave();
+    }
+}
+
+function renameBoardFromGrid(boardIndex) {
+    const success = BoardManager.renameBoard(boardIndex);
+    if (success) {
+        triggerAutoSave();
+    }
+}
+
+function duplicateBoardFromGrid(boardIndex) {
+    const success = BoardManager.duplicateBoard(boardIndex);
+    if (success) {
+        triggerAutoSave();
+    }
+}
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     init();
@@ -321,6 +366,34 @@ window.setListBackgroundColor = (...args) => {
     BoardManager.setListBackgroundColor(...args);
     triggerAutoSave();
 };
+
+// Board management functions
+window.deleteBoard = (...args) => {
+    const success = BoardManager.deleteBoard(...args);
+    if (success) {
+        triggerAutoSave();
+    }
+};
+
+window.renameBoard = (...args) => {
+    const success = BoardManager.renameBoard(...args);
+    if (success) {
+        triggerAutoSave();
+    }
+};
+
+window.duplicateBoard = (...args) => {
+    const success = BoardManager.duplicateBoard(...args);
+    if (success) {
+        triggerAutoSave();
+    }
+};
+
+// Board menu functions for workspace
+window.toggleBoardMenu = toggleBoardMenu;
+window.deleteBoardFromGrid = deleteBoardFromGrid;
+window.renameBoardFromGrid = renameBoardFromGrid;
+window.duplicateBoardFromGrid = duplicateBoardFromGrid;
 
 window.createCard = (...args) => {
     CardManager.createCard(...args);

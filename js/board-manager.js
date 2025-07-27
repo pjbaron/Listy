@@ -30,6 +30,92 @@ export class BoardManager {
         if (boardContainer) boardContainer.style.display = 'block';
     }
 
+    // Delete a board with confirmation
+    static deleteBoard(boardIndex) {
+        if (appState.boards.length <= 1) {
+            alert("Cannot delete the last board. You must have at least one board.");
+            return;
+        }
+
+        const board = appState.boards[boardIndex];
+        const listCount = board.lists.length;
+        const cardCount = board.lists.reduce((total, list) => total + list.cards.length, 0);
+        
+        let confirmMessage = `Are you sure you want to delete the board "${board.name}"?`;
+        
+        if (listCount > 0) {
+            confirmMessage += `\n\nThis will permanently delete ${listCount} list${listCount === 1 ? '' : 's'}`;
+            if (cardCount > 0) {
+                confirmMessage += ` and ${cardCount} card${cardCount === 1 ? '' : 's'}`;
+            }
+            confirmMessage += `.`;
+        }
+        
+        if (confirm(confirmMessage)) {
+            // Remove the board
+            appState.boards.splice(boardIndex, 1);
+            
+            // Adjust current board index if needed
+            if (appState.currentBoardIndex >= appState.boards.length) {
+                appState.currentBoardIndex = appState.boards.length - 1;
+            }
+            if (appState.currentBoardIndex < 0) {
+                appState.currentBoardIndex = 0;
+            }
+            
+            // Re-render everything
+            if (appState.boards.length > 0) {
+                UIManager.renderBoard();
+                UIManager.renderBoardTabs();
+                UIManager.renderBoardsGrid();
+            } else {
+                // If no boards left, show workspace view
+                UIManager.showWorkspaceView();
+                UIManager.renderBoardTabs();
+            }
+            
+            return true; // Successfully deleted
+        }
+        
+        return false; // User cancelled
+    }
+
+    // Rename a board
+    static renameBoard(boardIndex) {
+        const board = appState.boards[boardIndex];
+        const newName = prompt("Enter new board name:", board.name);
+        
+        if (newName && newName.trim() && newName !== board.name) {
+            board.name = newName.trim();
+            UIManager.renderBoardTabs();
+            UIManager.renderBoardsGrid();
+            return true;
+        }
+        
+        return false;
+    }
+
+    // Duplicate a board
+    static duplicateBoard(boardIndex) {
+        const originalBoard = appState.boards[boardIndex];
+        const newName = prompt("Enter name for the duplicated board:", `${originalBoard.name} (Copy)`);
+        
+        if (newName && newName.trim()) {
+            // Deep clone the board
+            const duplicatedBoard = JSON.parse(JSON.stringify(originalBoard));
+            duplicatedBoard.name = newName.trim();
+            
+            // Insert the duplicated board after the original
+            appState.boards.splice(boardIndex + 1, 0, duplicatedBoard);
+            
+            UIManager.renderBoardTabs();
+            UIManager.renderBoardsGrid();
+            return true;
+        }
+        
+        return false;
+    }
+
     // Create a new list
     static createList() {
         const name = prompt("List name:");
