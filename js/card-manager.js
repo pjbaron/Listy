@@ -1,5 +1,6 @@
 import { appState } from './app.js';
 import { UIManager } from './ui-manager.js';
+import { triggerAutoSave } from './app.js';
 
 export class CardManager {
     // Create a new card
@@ -26,8 +27,17 @@ export class CardManager {
         const cardDescriptionInput = document.getElementById('cardDescriptionInput');
         const cardModal = document.getElementById('cardModal');
         
-        if (cardTitleInput) cardTitleInput.value = appState.currentCardData.title;
-        if (cardDescriptionInput) cardDescriptionInput.value = appState.currentCardData.description || '';
+        if (cardTitleInput) {
+            cardTitleInput.value = appState.currentCardData.title;
+            // Add auto-save on input change
+            cardTitleInput.oninput = () => CardManager.autoSaveField('title', cardTitleInput.value);
+        }
+        
+        if (cardDescriptionInput) {
+            cardDescriptionInput.value = appState.currentCardData.description || '';
+            // Add auto-save on input change
+            cardDescriptionInput.oninput = () => CardManager.autoSaveField('description', cardDescriptionInput.value);
+        }
         
         // Update background color selector
         const backgroundSelector = document.getElementById('cardBackgroundSelector');
@@ -50,31 +60,6 @@ export class CardManager {
         appState.currentCardIndex = null;
     }
 
-    // Save card changes
-    static saveCard() {
-        if (!appState.currentCardData) return;
-        
-        const cardTitleInput = document.getElementById('cardTitleInput');
-        const cardDescriptionInput = document.getElementById('cardDescriptionInput');
-        const labelSelector = document.getElementById('labelSelector');
-        const backgroundSelector = document.getElementById('cardBackgroundSelector');
-        
-        if (cardTitleInput) appState.currentCardData.title = cardTitleInput.value;
-        if (cardDescriptionInput) appState.currentCardData.description = cardDescriptionInput.value;
-        
-        // Save background color
-        if (backgroundSelector) {
-            const selectedBg = backgroundSelector.querySelector('.background-color.selected');
-            appState.currentCardData.backgroundColor = selectedBg ? selectedBg.dataset.color : null;
-        }
-        
-        // Save card
-        appState.boards[appState.currentBoardIndex].lists[appState.currentListIndex].cards[appState.currentCardIndex] = appState.currentCardData;
-        
-        UIManager.renderBoard();
-        CardManager.closeCardModal();
-    }
-
     // Delete card
     static deleteCard() {
         if (confirm('Delete this card?')) {
@@ -93,6 +78,7 @@ export class CardManager {
             items: []
         });
         CardManager.renderChecklists();
+        CardManager.saveCardToBoard();
     }
 
     // Render checklists in the modal
@@ -142,6 +128,7 @@ export class CardManager {
         if (!appState.currentCardData || !appState.currentCardData.checklists) return;
         appState.currentCardData.checklists.splice(checklistIndex, 1);
         CardManager.renderChecklists();
+        CardManager.saveCardToBoard();
     }
 
     // Add checklist item
@@ -153,6 +140,7 @@ export class CardManager {
                 completed: false
             });
             CardManager.renderChecklists();
+            CardManager.saveCardToBoard();
         }
     }
 
@@ -161,6 +149,7 @@ export class CardManager {
         if (!appState.currentCardData || !appState.currentCardData.checklists) return;
         appState.currentCardData.checklists[checklistIndex].items.splice(itemIndex, 1);
         CardManager.renderChecklists();
+        CardManager.saveCardToBoard();
     }
 
     // Toggle checklist item completion
@@ -169,5 +158,47 @@ export class CardManager {
         appState.currentCardData.checklists[checklistIndex].items[itemIndex].completed = 
             !appState.currentCardData.checklists[checklistIndex].items[itemIndex].completed;
         CardManager.renderChecklists();
+        CardManager.saveCardToBoard();
+    }
+
+    // Helper method to save current card data to board and trigger auto-save
+    static saveCardToBoard() {
+        if (!appState.currentCardData || appState.currentListIndex === null || appState.currentCardIndex === null) return;
+        
+        // Save current card data to the board
+        appState.boards[appState.currentBoardIndex].lists[appState.currentListIndex].cards[appState.currentCardIndex] = 
+            JSON.parse(JSON.stringify(appState.currentCardData));
+        
+        // Update the UI to show progress changes
+        UIManager.renderBoard();
+        
+        // Trigger auto-save
+        triggerAutoSave();
+    }
+
+    // Auto-save field changes
+    static autoSaveField(fieldName, value) {
+        if (!appState.currentCardData) return;
+        
+        appState.currentCardData[fieldName] = value;
+        CardManager.saveCardToBoard();
+    }
+
+    // Handle background color selection with auto-save
+    static selectBackgroundColor(color) {
+        if (!appState.currentCardData) return;
+        
+        // Update the current card data
+        appState.currentCardData.backgroundColor = color === 'null' ? null : color;
+        
+        // Update UI selection
+        const backgroundSelector = document.getElementById('cardBackgroundSelector');
+        if (backgroundSelector) {
+            backgroundSelector.querySelectorAll('.background-color').forEach(bg => {
+                bg.classList.toggle('selected', bg.dataset.color === color);
+            });
+        }
+        
+        CardManager.saveCardToBoard();
     }
 }

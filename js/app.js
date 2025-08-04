@@ -297,13 +297,8 @@ function setupEventListeners() {
     if (backgroundSelector) {
         backgroundSelector.addEventListener('click', (e) => {
             if (e.target.classList.contains('background-color')) {
-                // Remove selected class from all background colors
-                backgroundSelector.querySelectorAll('.background-color').forEach(bg => {
-                    bg.classList.remove('selected');
-                });
-                
-                // Add selected class to clicked color
-                e.target.classList.add('selected');
+                // Use the new auto-save method
+                CardManager.selectBackgroundColor(e.target.dataset.color);
             }
         });
     }
@@ -673,11 +668,6 @@ window.moveCard = function(sourceListIndex, sourceCardIndex, targetListIndex, ta
     BoardRenderer.moveCard(sourceListIndex, sourceCardIndex, targetListIndex, targetCardIndex);
 };
 
-window.saveCard = (...args) => {
-    CardManager.saveCard(...args);
-    triggerAutoSave();
-};
-
 window.deleteCard = (...args) => {
     CardManager.deleteCard(...args);
     triggerAutoSave();
@@ -685,27 +675,22 @@ window.deleteCard = (...args) => {
 
 window.addChecklist = (...args) => {
     CardManager.addChecklist(...args);
-    // No auto-save here since it's just modal data
 };
 
 window.deleteChecklist = (...args) => {
     CardManager.deleteChecklist(...args);
-    // No auto-save here since it's just modal data
 };
 
 window.addChecklistItem = (...args) => {
     CardManager.addChecklistItem(...args);
-    // No auto-save here since it's just modal data
 };
 
 window.deleteChecklistItem = (...args) => {
     CardManager.deleteChecklistItem(...args);
-    // No auto-save here since it's just modal data
 };
 
 window.toggleChecklistItem = (...args) => {
     CardManager.toggleChecklistItem(...args);
-    // No auto-save here since it's just modal data
 };
 
 window.handleBackgroundUpload = (...args) => {
