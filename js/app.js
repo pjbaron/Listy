@@ -291,7 +291,6 @@ function init() {
 function setupEventListeners() {
     const boardsBtn = document.getElementById('boardsBtn');
     const backgroundBtn = document.getElementById('backgroundBtn');
-    const labelSelector = document.getElementById('labelSelector');
     // Background color selector event listener
     const backgroundSelector = document.getElementById('cardBackgroundSelector');
 
@@ -317,14 +316,6 @@ function setupEventListeners() {
         backgroundBtn.addEventListener('click', BoardManager.uploadBackground);
     }
     
-    if (labelSelector) {
-        labelSelector.addEventListener('click', (e) => {
-            if (e.target.classList.contains('label-color')) {
-                e.target.classList.toggle('selected');
-            }
-        });
-    }
-
     // Close settings menus when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.list-settings')) {

@@ -292,8 +292,6 @@ export class BoardRenderer {
 
     // Create card HTML with drag functionality
     static createCardHTML(card, listIndex, cardIndex) {
-        const labelsHTML = card.labels.map(color => `<div class="card-label" style="background: ${color}"></div>`).join('');
-        
         let progressHTML = '';
         if (card.checklists && card.checklists.length > 0) {
             const totalItems = card.checklists.reduce((sum, checklist) => sum + checklist.items.length, 0);
@@ -323,7 +321,6 @@ export class BoardRenderer {
         return `
             <div class="card" draggable="true" data-list-index="${listIndex}" data-card-index="${cardIndex}"
                 ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ${backgroundStyle}>
-                ${labelsHTML ? `<div class="card-labels">${labelsHTML}</div>` : ''}
                 <div class="card-title">${card.title}</div>
                 ${descriptionHTML}
                 ${progressHTML}

@@ -39,19 +39,6 @@
     cursor: pointer;
 }
 
-.card-labels {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 8px;
-    pointer-events: none; /* Prevent interference with drag */
-}
-
-.card-label {
-    height: 8px;
-    border-radius: 4px;
-    min-width: 40px;
-}
-
 .card-title {
     font-size: 14px;
     color: #172b4d;

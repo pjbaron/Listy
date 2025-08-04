@@ -9,7 +9,6 @@ export class CardManager {
             appState.boards[appState.currentBoardIndex].lists[listIndex].cards.push({
                 title: title,
                 description: "",
-                labels: [],
                 checklists: [],
                 backgroundColor: null // Add background color property
             });
@@ -29,14 +28,6 @@ export class CardManager {
         
         if (cardTitleInput) cardTitleInput.value = appState.currentCardData.title;
         if (cardDescriptionInput) cardDescriptionInput.value = appState.currentCardData.description || '';
-        
-        // Update label selector
-        const labelSelector = document.getElementById('labelSelector');
-        if (labelSelector) {
-            labelSelector.querySelectorAll('.label-color').forEach(label => {
-                label.classList.toggle('selected', appState.currentCardData.labels.includes(label.dataset.color));
-            });
-        }
         
         // Update background color selector
         const backgroundSelector = document.getElementById('cardBackgroundSelector');
@@ -70,12 +61,6 @@ export class CardManager {
         
         if (cardTitleInput) appState.currentCardData.title = cardTitleInput.value;
         if (cardDescriptionInput) appState.currentCardData.description = cardDescriptionInput.value;
-        
-        // Save labels
-        if (labelSelector) {
-            appState.currentCardData.labels = Array.from(labelSelector.querySelectorAll('.label-color.selected'))
-                .map(label => label.dataset.color);
-        }
         
         // Save background color
         if (backgroundSelector) {
