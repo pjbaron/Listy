@@ -241,19 +241,38 @@ export class CardManager {
     static toggleCardCompletion(listIndex, cardIndex) {
         const board = appState.boards[appState.currentBoardIndex];
         const card = board.lists[listIndex].cards[cardIndex];
-        
+
         // Initialize completed property if it doesn't exist (for existing cards)
         if (card.completed === undefined) {
             card.completed = false;
         }
-        
+
         // Toggle the completion status
         card.completed = !card.completed;
-        
-        // Re-render the board to update the UI
-        UIManager.renderBoard();
-        
+
+        // Update the specific card's visual state without full re-render
+        CardManager.updateCardCompletionUI(listIndex, cardIndex, card);
+
         // Trigger auto-save
         triggerAutoSave();
+    }
+
+    // Update card completion UI without full re-render
+    static updateCardCompletionUI(listIndex, cardIndex, card) {
+        const cardElement = document.querySelector(`[data-list-index="${listIndex}"][data-card-index="${cardIndex}"]`);
+        if (cardElement) {
+            const checkbox = cardElement.querySelector('.card-completion-checkbox');
+            const cardTitle = cardElement.querySelector('.card-title');
+
+            if (card.completed) {
+                cardElement.classList.add('card-completed');
+                checkbox.classList.add('checked');
+                checkbox.textContent = '✓';
+            } else {
+                cardElement.classList.remove('card-completed');
+                checkbox.classList.remove('checked');
+                checkbox.textContent = '';
+            }
+        }
     }
 }
