@@ -677,6 +677,10 @@ window.addChecklist = (...args) => {
     CardManager.addChecklist(...args);
 };
 
+window.editChecklistTitle = (...args) => {
+    CardManager.editChecklistTitle(...args);
+};
+
 window.deleteChecklist = (...args) => {
     CardManager.deleteChecklist(...args);
 };
@@ -685,12 +689,20 @@ window.addChecklistItem = (...args) => {
     CardManager.addChecklistItem(...args);
 };
 
+window.editChecklistItem = (...args) => {
+    CardManager.editChecklistItem(...args);
+};
+
 window.deleteChecklistItem = (...args) => {
     CardManager.deleteChecklistItem(...args);
 };
 
 window.toggleChecklistItem = (...args) => {
     CardManager.toggleChecklistItem(...args);
+};
+
+window.toggleCardCompletion = (...args) => {
+    CardManager.toggleCardCompletion(...args);
 };
 
 window.handleBackgroundUpload = (...args) => {

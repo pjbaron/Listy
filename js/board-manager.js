@@ -175,7 +175,10 @@ export class BoardManager {
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
+                // Store base64 for localStorage persistence
                 appState.boards[appState.currentBoardIndex].background = e.target.result;
+                // Also store blob URL for current session (more efficient)
+                appState.boards[appState.currentBoardIndex].backgroundPath = URL.createObjectURL(file);
                 UIManager.renderBoard();
             };
             reader.readAsDataURL(file);

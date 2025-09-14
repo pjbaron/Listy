@@ -45,11 +45,29 @@ export class BoardRenderer {
         // Set background
         const bgElement = document.getElementById('boardBackground');
         if (bgElement) {
-            if (board.background) {
+            if (board.background && board.backgroundPath) {
+                // Use the blob URL from current session (only works during current session)
+                bgElement.onerror = function() {
+                    bgElement.classList.add('hidden');
+                    bgElement.src = '';
+                };
+                bgElement.onload = function() {
+                    bgElement.classList.remove('hidden');
+                };
+                bgElement.src = board.backgroundPath;
+            } else if (board.background && board.background.startsWith('data:')) {
+                // Legacy support for base64 encoded images (existing boards)
+                bgElement.onload = function() {
+                    bgElement.classList.remove('hidden');
+                };
+                bgElement.onerror = function() {
+                    bgElement.classList.add('hidden');
+                };
                 bgElement.src = board.background;
-                bgElement.classList.remove('hidden');
             } else {
+                // No valid background available - hide gracefully
                 bgElement.classList.add('hidden');
+                bgElement.src = '';
             }
         }
     }
@@ -319,8 +337,12 @@ export class BoardRenderer {
         const backgroundStyle = card.backgroundColor ? `style="background-color: ${card.backgroundColor};"` : '';
         
         return `
-            <div class="card" draggable="true" data-list-index="${listIndex}" data-card-index="${cardIndex}"
+            <div class="card ${card.completed ? 'card-completed' : ''}" draggable="true" data-list-index="${listIndex}" data-card-index="${cardIndex}"
                 ondragstart="handleCardDragStart(event)" ondragend="handleCardDragEnd(event)" ${backgroundStyle}>
+                <div class="card-completion-checkbox ${card.completed ? 'checked' : ''}" 
+                     onclick="event.stopPropagation(); toggleCardCompletion(${listIndex}, ${cardIndex})">
+                    ${card.completed ? '✓' : ''}
+                </div>
                 <div class="card-title">${card.title}</div>
                 ${descriptionHTML}
                 ${progressHTML}

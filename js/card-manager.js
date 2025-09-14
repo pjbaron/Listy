@@ -11,7 +11,8 @@ export class CardManager {
                 title: title,
                 description: "",
                 checklists: [],
-                backgroundColor: null // Add background color property
+                backgroundColor: null, // Add background color property
+                completed: false // Add completion status
             });
             UIManager.renderBoard();
         }
@@ -101,7 +102,10 @@ export class CardManager {
             checklistDiv.innerHTML = `
                 <div class="checklist-header">
                     <span class="checklist-title">${checklist.name}</span>
-                    <button class="btn-danger" onclick="deleteChecklist(${checklistIndex})">Delete</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="btn-secondary" onclick="editChecklistTitle(${checklistIndex})" style="padding: 2px 6px; font-size: 12px;">✏️</button>
+                        <button class="btn-danger" onclick="deleteChecklist(${checklistIndex})">Delete</button>
+                    </div>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width: ${progressPercent}%"></div>
@@ -112,7 +116,10 @@ export class CardManager {
                             <input type="checkbox" ${item.completed ? 'checked' : ''} 
                                    onchange="toggleChecklistItem(${checklistIndex}, ${itemIndex})">
                             <span class="checklist-item-text">${item.text}</span>
-                            <button class="btn-danger" onclick="deleteChecklistItem(${checklistIndex}, ${itemIndex})" style="margin-left: auto;">×</button>
+                            <div style="margin-left: auto; display: flex; gap: 5px;">
+                                <button class="btn-secondary" onclick="editChecklistItem(${checklistIndex}, ${itemIndex})" style="padding: 2px 6px; font-size: 12px;">✏️</button>
+                                <button class="btn-danger" onclick="deleteChecklistItem(${checklistIndex}, ${itemIndex})" style="padding: 2px 6px; font-size: 12px;">×</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -121,6 +128,20 @@ export class CardManager {
             
             container.appendChild(checklistDiv);
         });
+    }
+
+    // Edit checklist title
+    static editChecklistTitle(checklistIndex) {
+        if (!appState.currentCardData || !appState.currentCardData.checklists) return;
+        
+        const currentTitle = appState.currentCardData.checklists[checklistIndex].name;
+        const newTitle = prompt("Edit checklist title:", currentTitle);
+        
+        if (newTitle !== null && newTitle.trim() !== "") {
+            appState.currentCardData.checklists[checklistIndex].name = newTitle.trim();
+            CardManager.renderChecklists();
+            CardManager.saveCardToBoard();
+        }
     }
 
     // Delete checklist
@@ -139,6 +160,20 @@ export class CardManager {
                 text: text,
                 completed: false
             });
+            CardManager.renderChecklists();
+            CardManager.saveCardToBoard();
+        }
+    }
+
+    // Edit checklist item
+    static editChecklistItem(checklistIndex, itemIndex) {
+        if (!appState.currentCardData || !appState.currentCardData.checklists) return;
+        
+        const currentText = appState.currentCardData.checklists[checklistIndex].items[itemIndex].text;
+        const newText = prompt("Edit item:", currentText);
+        
+        if (newText !== null && newText.trim() !== "") {
+            appState.currentCardData.checklists[checklistIndex].items[itemIndex].text = newText.trim();
             CardManager.renderChecklists();
             CardManager.saveCardToBoard();
         }
@@ -200,5 +235,25 @@ export class CardManager {
         }
         
         CardManager.saveCardToBoard();
+    }
+
+    // Toggle card completion status
+    static toggleCardCompletion(listIndex, cardIndex) {
+        const board = appState.boards[appState.currentBoardIndex];
+        const card = board.lists[listIndex].cards[cardIndex];
+        
+        // Initialize completed property if it doesn't exist (for existing cards)
+        if (card.completed === undefined) {
+            card.completed = false;
+        }
+        
+        // Toggle the completion status
+        card.completed = !card.completed;
+        
+        // Re-render the board to update the UI
+        UIManager.renderBoard();
+        
+        // Trigger auto-save
+        triggerAutoSave();
     }
 }

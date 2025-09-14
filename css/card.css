@@ -3,7 +3,7 @@
 .card {
     background: white;
     border-radius: 8px;
-    padding: 12px;
+    padding: 12px 12px 12px 32px;
     margin: 8px 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     cursor: pointer;
@@ -168,4 +168,45 @@
 
 .card[draggable="true"]:active {
     cursor: grabbing;
+}
+
+/* Card completion checkbox */
+.card-completion-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    background: white;
+    z-index: 10;
+}
+
+.card-completion-checkbox:hover {
+    border-color: #61bd4f;
+    transform: scale(1.1);
+}
+
+.card-completion-checkbox.checked {
+    background: #61bd4f;
+    border-color: #61bd4f;
+    color: white;
+}
+
+
+/* Style for completed cards */
+.card-completed {
+    opacity: 0.7;
+}
+
+.card-completed .card-title {
+    color: #999;
 }

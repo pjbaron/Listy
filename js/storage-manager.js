@@ -21,7 +21,12 @@ export class StorageManager {
     // Save boards to localStorage
     static saveBoards(boards) {
         try {
-            localStorage.setItem(StorageManager.STORAGE_KEY, JSON.stringify(boards));
+            // Create a clean copy without blob URLs for storage (keep base64 backgrounds)
+            const storageBoards = boards.map(board => {
+                const { backgroundPath, ...cleanBoard } = board;
+                return cleanBoard;
+            });
+            localStorage.setItem(StorageManager.STORAGE_KEY, JSON.stringify(storageBoards));
             return true;
         } catch (error) {
             console.error('Error saving boards to localStorage:', error);
@@ -75,7 +80,12 @@ export class StorageManager {
     // Export data as JSON file for backup
     static exportData(boards) {
         try {
-            const dataStr = JSON.stringify(boards, null, 2);
+            // Create a clean copy without backgrounds and blob URLs for export
+            const exportBoards = boards.map(board => {
+                const { background, backgroundPath, ...cleanBoard } = board;
+                return cleanBoard;
+            });
+            const dataStr = JSON.stringify(exportBoards, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
             
             // Create timestamp with date, hour, and minutes
