@@ -1,18 +1,10 @@
 # Listy
 
+A browser-based task management application with boards, lists, and cards.
 
+**Live Demo**: https://www.insanehero.com/html/Listy/
 
-Task list manager using local storage (browser) and JSON import/export.
-
-
-
-https://www.insanehero.com/html/Listy/
-
-
-
-A browser-based task management application.
-
-Organize your projects with boards, lists, and cards with full drag-and-drop functionality.
+Features drag-and-drop functionality, checklists, card completion tracking, and local storage with JSON backup/restore.
 
 
 ## Keyboard Shortcuts
@@ -38,9 +30,9 @@ In workspace view, hover over any board card to see the options menu (⋯):
 - **Delete Board**: Permanently remove the board (requires confirmation)
 
 ### Board Backgrounds
-- Click the "Background" button in the header
-- Select an image file from your computer
-- The image will be applied as the board background
+- Click "Background" button to upload an image
+- Backgrounds persist in current session and localStorage
+- Not included in exports to keep file sizes small
 
 ## List Management
 
@@ -74,33 +66,13 @@ Click the three dots (⋯) in any list header to access:
 - Enter a title for your card
 - The card will be added to the bottom of the list
 
-### Editing Cards
-Click on any card to open the card editor with these options:
-
-#### Basic Information
-- **Title**: Edit the card title
-- **Description**: Add detailed description, URLs will be clickable
-
-#### Labels
-- Choose from 6 different colored category markers
-- Multiple markers can be applied to each card
-- Markers appear as a list of colored bars at the top of cards
-
-#### Background Colors
-- Choose from 12 background colors for each card
-- Background colors help categorize and prioritize cards visually
-
-#### Checklists
-- **Add Checklist**: Create new checklists within cards
-- **Add Items**: Add individual checklist items with text descriptions
-- **Check/Uncheck**: Click checkboxes to mark items as complete
-- **Progress Tracking**: Visual progress bar shows completion percentage
-- **Delete Items**: Remove individual checklist items or entire checklists
-- **Multiple Checklists**: Add multiple checklists per card for complex tasks
-
-#### Buttons
-- **Save**: Save all changes and close the card editor
-- **Delete Card**: Permanently remove the card from the list (verification required)
+### Card Features
+- **Completion Checkbox**: Click the circle in top-left corner to mark cards complete
+- **Title & Description**: Editable with automatic URL linking
+- **Background Colors**: 12 color options for visual categorization
+- **Checklists**: Multiple checklists per card with progress tracking
+- **Edit Options**: Rename checklist titles and items with pencil icons
+- **Delete**: Remove button in card modal top-right corner
 
 ### Moving Cards
 - **Drag & Drop**: Drag cards between lists or reorder within the same list
@@ -109,43 +81,14 @@ Click on any card to open the card editor with these options:
 
 ## Data Management
 
-### Automatic Saving
-- All changes are automatically saved to your browser's local storage
-- No manual save required - your data persists between sessions
+- **Auto-save**: All changes saved to browser localStorage automatically
+- **Export/Import**: JSON backup files with timestamps (backgrounds not included)
+- **Storage Info**: View usage statistics and last save time
 
-### Export Backup
-- Click "Export Backup" in the header
-- Downloads a JSON file with timestamp (e.g., \`listy-backup-2025-01-27_14-30.json\`)
-- Contains all boards, lists, cards, and settings
-- Use for backup or transferring data between devices
+## Requirements
 
-### Import Backup
-- Click "Import Backup" in the header
-- Select a previously exported JSON backup file
-- Confirms before replacing current data
-- Restores all boards and settings from backup
-
-### Storage Information
-- Click "Storage Info" to view current usage
-- Shows number of boards and storage size
-- Displays last save timestamp
-
-## Workspace View
-
-### Accessing Workspace
-- Click "Boards" button in the header to see all boards
-- Shows a grid view of all your boards
-
-### Board Grid Features
-- **Visual Preview**: Each board shows as a card with background image
-- **Quick Access**: Click any board to open it
-- **Board Menu**: Hover over boards to access management options
-- **Create New**: Click "Create new board" card to add boards
-
-### Browser Compatibility
-- Works in all modern browsers
-- Requires JavaScript to be enabled
-- Local storage must be available for data persistence
+- Modern web browser with JavaScript enabled
+- Local storage support for data persistence
 
 
 
