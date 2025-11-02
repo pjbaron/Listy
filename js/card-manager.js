@@ -7,7 +7,7 @@ export class CardManager {
     static createCard(listIndex) {
         const title = prompt("Card title:");
         if (title) {
-            appState.boards[appState.currentBoardIndex].lists[listIndex].cards.push({
+            appState.boards[appState.currentBoardIndex].lists[listIndex].cards.unshift({
                 title: title,
                 description: "",
                 checklists: [],
@@ -23,23 +23,23 @@ export class CardManager {
         appState.currentListIndex = listIndex;
         appState.currentCardIndex = cardIndex;
         appState.currentCardData = JSON.parse(JSON.stringify(appState.boards[appState.currentBoardIndex].lists[listIndex].cards[cardIndex]));
-        
+
         const cardTitleInput = document.getElementById('cardTitleInput');
         const cardDescriptionInput = document.getElementById('cardDescriptionInput');
         const cardModal = document.getElementById('cardModal');
-        
+
         if (cardTitleInput) {
             cardTitleInput.value = appState.currentCardData.title;
             // Add auto-save on input change
             cardTitleInput.oninput = () => CardManager.autoSaveField('title', cardTitleInput.value);
         }
-        
+
         if (cardDescriptionInput) {
             cardDescriptionInput.value = appState.currentCardData.description || '';
             // Add auto-save on input change
             cardDescriptionInput.oninput = () => CardManager.autoSaveField('description', cardDescriptionInput.value);
         }
-        
+
         // Update background color selector
         const backgroundSelector = document.getElementById('cardBackgroundSelector');
         if (backgroundSelector) {
@@ -47,9 +47,12 @@ export class CardManager {
                 bg.classList.toggle('selected', appState.currentCardData.backgroundColor === bg.dataset.color);
             });
         }
-        
+
         CardManager.renderChecklists();
         if (cardModal) cardModal.classList.add('show');
+
+        // Add Escape key handler
+        CardManager.addEscapeKeyHandler();
     }
 
     // Close card modal
@@ -59,6 +62,9 @@ export class CardManager {
         appState.currentCardData = null;
         appState.currentListIndex = null;
         appState.currentCardIndex = null;
+
+        // Remove Escape key handler
+        CardManager.removeEscapeKeyHandler();
     }
 
     // Delete card
@@ -273,6 +279,46 @@ export class CardManager {
                 checkbox.classList.remove('checked');
                 checkbox.textContent = '';
             }
+        }
+    }
+
+    // Handle Escape key press in card modal
+    static handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            const cardModal = document.getElementById('cardModal');
+
+            // Only handle if the modal is open
+            if (!cardModal || !cardModal.classList.contains('show')) return;
+
+            // Check if any input or textarea within the modal is focused
+            const activeElement = document.activeElement;
+            const isEditingField = activeElement &&
+                (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') &&
+                cardModal.contains(activeElement);
+
+            if (isEditingField) {
+                // If editing a field, blur it to exit edit mode
+                activeElement.blur();
+            } else {
+                // If not editing, close the modal
+                CardManager.closeCardModal();
+            }
+        }
+    }
+
+    // Add Escape key handler
+    static addEscapeKeyHandler() {
+        // Store the bound handler so we can remove it later
+        if (!CardManager._escapeKeyHandler) {
+            CardManager._escapeKeyHandler = CardManager.handleEscapeKey.bind(CardManager);
+        }
+        document.addEventListener('keydown', CardManager._escapeKeyHandler);
+    }
+
+    // Remove Escape key handler
+    static removeEscapeKeyHandler() {
+        if (CardManager._escapeKeyHandler) {
+            document.removeEventListener('keydown', CardManager._escapeKeyHandler);
         }
     }
 }
