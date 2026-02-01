@@ -88,6 +88,40 @@ export class CardManager {
         CardManager.saveCardToBoard();
     }
 
+    // Add a numbered checklist with auto-generated items
+    static addNumberedChecklist() {
+        const name = prompt("Checklist name:", "Checklist");
+        if (name === null) return;
+
+        const prefix = prompt("Item prefix (e.g. Episode, Day, Lesson):", "Item");
+        if (prefix === null) return;
+
+        const firstStr = prompt("First number:", "1");
+        if (firstStr === null) return;
+        const first = parseInt(firstStr);
+        if (isNaN(first)) { alert("Invalid number."); return; }
+
+        const lastStr = prompt("Last number:", "10");
+        if (lastStr === null) return;
+        const last = parseInt(lastStr);
+        if (isNaN(last)) { alert("Invalid number."); return; }
+
+        if (last < first) { alert("Last number must be >= first number."); return; }
+
+        const items = [];
+        for (let n = first; n <= last; n++) {
+            items.push({ text: `${prefix} ${n}`, completed: false });
+        }
+
+        if (!appState.currentCardData.checklists) appState.currentCardData.checklists = [];
+        appState.currentCardData.checklists.push({
+            name: name || "Checklist",
+            items: items
+        });
+        CardManager.renderChecklists();
+        CardManager.saveCardToBoard();
+    }
+
     // Render checklists in the modal
     static renderChecklists() {
         const container = document.getElementById('checklistsContainer');
@@ -282,40 +316,39 @@ export class CardManager {
         }
     }
 
-    // Handle Escape key press in card modal
-    static handleEscapeKey(event) {
+    // Handle keyboard events in card modal
+    static handleModalKeydown(event) {
+        const cardModal = document.getElementById('cardModal');
+        if (!cardModal || !cardModal.classList.contains('show')) return;
+
         if (event.key === 'Escape') {
-            const cardModal = document.getElementById('cardModal');
-
-            // Only handle if the modal is open
-            if (!cardModal || !cardModal.classList.contains('show')) return;
-
-            // Check if any input or textarea within the modal is focused
             const activeElement = document.activeElement;
             const isEditingField = activeElement &&
                 (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') &&
                 cardModal.contains(activeElement);
 
             if (isEditingField) {
-                // If editing a field, blur it to exit edit mode
                 activeElement.blur();
             } else {
-                // If not editing, close the modal
                 CardManager.closeCardModal();
             }
         }
+
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            CardManager.closeCardModal();
+        }
     }
 
-    // Add Escape key handler
+    // Add modal key handler
     static addEscapeKeyHandler() {
-        // Store the bound handler so we can remove it later
         if (!CardManager._escapeKeyHandler) {
-            CardManager._escapeKeyHandler = CardManager.handleEscapeKey.bind(CardManager);
+            CardManager._escapeKeyHandler = CardManager.handleModalKeydown.bind(CardManager);
         }
         document.addEventListener('keydown', CardManager._escapeKeyHandler);
     }
 
-    // Remove Escape key handler
+    // Remove modal key handler
     static removeEscapeKeyHandler() {
         if (CardManager._escapeKeyHandler) {
             document.removeEventListener('keydown', CardManager._escapeKeyHandler);

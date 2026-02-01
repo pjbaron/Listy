@@ -43,7 +43,6 @@
 
     <!-- Board Container -->
     <div class="board-container" id="boardContainer">
-        <img class="board-background hidden" id="boardBackground" src="" alt="Board background">
         <div class="board" id="board">
             <!-- Lists will be added here -->
             <button class="add-list-btn" onclick="createList()">+ Add a list</button>
@@ -132,7 +131,10 @@
                 <div class="form-group">
                     <label class="form-label">Checklists</label>
                     <div id="checklistsContainer"></div>
-                    <button class="btn-secondary" onclick="addChecklist()">Add Checklist</button>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                        <button class="btn-secondary" onclick="addChecklist()">Add Checklist</button>
+                        <button class="btn-secondary" onclick="addNumberedChecklist()">Numbered Checklist</button>
+                    </div>
                 </div>
                 
             </div>

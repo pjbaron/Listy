@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"C:\\wamp64\\www\\host_level\\Listy\" /s /b)"
+      "Bash(dir \"C:\\wamp64\\www\\host_level\\Listy\" /s /b)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

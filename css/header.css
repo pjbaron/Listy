@@ -56,8 +56,11 @@
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-    white-space: nowrap;
-    min-width: 100px;
+    min-width: 80px;
+    max-width: 150px;
+    text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .board-tab.active {

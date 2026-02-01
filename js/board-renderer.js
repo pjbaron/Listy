@@ -42,32 +42,15 @@ export class BoardRenderer {
             boardElement.appendChild(newAddButton);
         }
         
-        // Set background
-        const bgElement = document.getElementById('boardBackground');
-        if (bgElement) {
+        // Set background image on board container via CSS
+        const boardContainer = document.getElementById('boardContainer');
+        if (boardContainer) {
             if (board.background && board.backgroundPath) {
-                // Use the blob URL from current session (only works during current session)
-                bgElement.onerror = function() {
-                    bgElement.classList.add('hidden');
-                    bgElement.src = '';
-                };
-                bgElement.onload = function() {
-                    bgElement.classList.remove('hidden');
-                };
-                bgElement.src = board.backgroundPath;
+                boardContainer.style.backgroundImage = `url('${board.backgroundPath}')`;
             } else if (board.background && board.background.startsWith('data:')) {
-                // Legacy support for base64 encoded images (existing boards)
-                bgElement.onload = function() {
-                    bgElement.classList.remove('hidden');
-                };
-                bgElement.onerror = function() {
-                    bgElement.classList.add('hidden');
-                };
-                bgElement.src = board.background;
+                boardContainer.style.backgroundImage = `url('${board.background}')`;
             } else {
-                // No valid background available - hide gracefully
-                bgElement.classList.add('hidden');
-                bgElement.src = '';
+                boardContainer.style.backgroundImage = '';
             }
         }
     }
@@ -122,6 +105,15 @@ export class BoardRenderer {
                                      title="Pastel Lavender"></div>
                             </div>
                         </div>
+                        <div class="settings-divider"></div>
+                        <button class="settings-option" onclick="duplicateList(${listIndex})">
+                            <span class="settings-icon">📋</span>
+                            Duplicate List
+                        </button>
+                        <button class="settings-option" onclick="copyListToBoard(${listIndex})">
+                            <span class="settings-icon">📤</span>
+                            Copy List to Board
+                        </button>
                         <div class="settings-divider"></div>
                         <button class="settings-option delete-option" onclick="deleteList(${listIndex})">
                             <span class="settings-icon">🗑️</span>

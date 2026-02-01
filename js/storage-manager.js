@@ -78,7 +78,7 @@ export class StorageManager {
     }
 
     // Export data as JSON file for backup
-    static exportData(boards) {
+    static async exportData(boards) {
         try {
             // Create a clean copy without backgrounds and blob URLs for export
             const exportBoards = boards.map(board => {
@@ -86,24 +86,44 @@ export class StorageManager {
                 return cleanBoard;
             });
             const dataStr = JSON.stringify(exportBoards, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            
+
             // Create timestamp with date, hour, and minutes
             const now = new Date();
             const timestamp = now.toISOString().slice(0, 16).replace('T', '_').replace(':', '-');
-            
+            const filename = `listy-backup-${timestamp}.json`;
+
+            // Try File System Access API (Chrome/Edge) for Save As dialog
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: filename,
+                        types: [{
+                            description: 'JSON Files',
+                            accept: { 'application/json': ['.json'] }
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(dataStr);
+                    await writable.close();
+                    return true;
+                } catch (pickerError) {
+                    // User cancelled the picker - not an error
+                    if (pickerError.name === 'AbortError') return false;
+                    // Fall through to legacy download on other errors
+                    console.warn('File picker failed, falling back to download:', pickerError);
+                }
+            }
+
+            // Fallback: standard download approach
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = `listy-backup-${timestamp}.json`;
-            
-            // Trigger download without showing file dialog
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            // Clean up the URL object
             URL.revokeObjectURL(link.href);
-            
+
             return true;
         } catch (error) {
             console.error('Error exporting data:', error);

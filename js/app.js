@@ -25,7 +25,7 @@ Organize your projects with boards, lists, and cards with full drag-and-drop fun
 ## Keyboard Shortcuts
 
 - **Ctrl/Cmd + S**: Manual save (though auto-save is always active)
-- **Ctrl/Cmd + E**: Export backup
+- **Ctrl/Cmd + E**: Save boards to file
 
 ## Board Management
 
@@ -63,6 +63,8 @@ Click the three dots (⋯) in any list header to access:
 - Choose a color.
 
 #### List Actions
+- **Duplicate List**: Create a copy of the list on the same board
+- **Copy List to Board**: Copy the list to a different board
 - **Delete List**: Remove the list and all its cards (requires confirmation)
 
 ### Editing List Names
@@ -104,6 +106,7 @@ Click on any card to open the card editor with these options:
 - **Progress Tracking**: Visual progress bar shows completion percentage
 - **Delete Items**: Remove individual checklist items or entire checklists
 - **Multiple Checklists**: Add multiple checklists per card for complex tasks
+- **Numbered Checklist**: Auto-generate a checklist with numbered items (e.g., Episode 1-12)
 
 #### Buttons
 - **Save**: Save all changes and close the card editor
@@ -120,9 +123,10 @@ Click on any card to open the card editor with these options:
 - All changes are automatically saved to your browser's local storage
 - No manual save required - your data persists between sessions
 
-### Export Backup
-- Click "Export Backup" in the header
-- Downloads a JSON file with timestamp (e.g., \`listy-backup-2025-01-27_14-30.json\`)
+### Save Boards
+- Click "Save Boards" in the header
+- Saves a JSON file with timestamp (e.g., \`listy-backup-2025-01-27_14-30.json\`)
+- On Chrome/Edge, shows a Save As dialog to choose location
 - Contains all boards, lists, cards, and settings
 - Use for backup or transferring data between devices
 
@@ -358,8 +362,8 @@ function addDataManagementButtons() {
     // Export button
     const exportBtn = document.createElement('button');
     exportBtn.className = 'btn';
-    exportBtn.textContent = 'Export Backup';
-    exportBtn.title = 'Download backup file';
+    exportBtn.textContent = 'Save Boards';
+    exportBtn.title = 'Save boards to file';
     exportBtn.onclick = exportData;
     
     // Import button
@@ -399,12 +403,13 @@ export function triggerAutoSave() {
 }
 
 // Export data to file
-function exportData() {
-    const success = StorageManager.exportData(appState.boards);
+async function exportData() {
+    const success = await StorageManager.exportData(appState.boards);
     if (success) {
-        showNotification('Backup exported successfully!');
+        showNotification('Boards saved successfully!');
     } else {
-        showNotification('Failed to export backup.', 'error');
+        // Don't show error if user just cancelled the picker
+        // (exportData returns false for cancel, which is not an error)
     }
 }
 
@@ -474,7 +479,7 @@ Storage Usage:
 • Last saved: ${new Date().toLocaleString()}
 
 Data is automatically saved to your browser's local storage.
-Use "Export Backup" to create a downloadable backup file.
+Use "Save Boards" to save a backup file.
     `.trim();
     
     alert(message);
@@ -597,6 +602,18 @@ window.deleteList = (...args) => {
     triggerAutoSave();
 };
 
+window.duplicateList = (...args) => {
+    BoardManager.duplicateList(...args);
+    triggerAutoSave();
+};
+
+window.copyListToBoard = (...args) => {
+    const success = BoardManager.copyListToBoard(...args);
+    if (success) {
+        triggerAutoSave();
+    }
+};
+
 window.toggleListSettings = BoardManager.toggleListSettings;
 
 window.setListBackgroundColor = (...args) => {
@@ -675,6 +692,10 @@ window.deleteCard = (...args) => {
 
 window.addChecklist = (...args) => {
     CardManager.addChecklist(...args);
+};
+
+window.addNumberedChecklist = (...args) => {
+    CardManager.addNumberedChecklist(...args);
 };
 
 window.editChecklistTitle = (...args) => {

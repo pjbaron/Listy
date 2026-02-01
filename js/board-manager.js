@@ -116,6 +116,53 @@ export class BoardManager {
         return false;
     }
 
+    // Duplicate a list on the same board
+    static duplicateList(listIndex) {
+        const board = appState.boards[appState.currentBoardIndex];
+        const originalList = board.lists[listIndex];
+        const duplicatedList = JSON.parse(JSON.stringify(originalList));
+        duplicatedList.name = originalList.name + ' (Copy)';
+        board.lists.splice(listIndex + 1, 0, duplicatedList);
+        UIManager.renderBoard();
+        return true;
+    }
+
+    // Copy a list to a different board
+    static copyListToBoard(listIndex) {
+        const currentBoard = appState.boards[appState.currentBoardIndex];
+        const list = currentBoard.lists[listIndex];
+
+        // Build list of other boards
+        const otherBoards = [];
+        appState.boards.forEach((board, i) => {
+            if (i !== appState.currentBoardIndex) {
+                otherBoards.push({ index: i, name: board.name });
+            }
+        });
+
+        if (otherBoards.length === 0) {
+            alert('No other boards available. Create another board first.');
+            return false;
+        }
+
+        // Build a numbered prompt
+        const options = otherBoards.map((b, i) => `${i + 1}. ${b.name}`).join('\n');
+        const choice = prompt(`Copy "${list.name}" to which board?\n\n${options}\n\nEnter number:`);
+
+        if (choice === null) return false;
+
+        const choiceNum = parseInt(choice);
+        if (isNaN(choiceNum) || choiceNum < 1 || choiceNum > otherBoards.length) {
+            alert('Invalid selection.');
+            return false;
+        }
+
+        const targetBoardIndex = otherBoards[choiceNum - 1].index;
+        const copiedList = JSON.parse(JSON.stringify(list));
+        appState.boards[targetBoardIndex].lists.push(copiedList);
+        return true;
+    }
+
     // Create a new list
     static createList() {
         const name = prompt("List name:");
