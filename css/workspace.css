@@ -13,7 +13,7 @@
 
 .boards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 250px));
     gap: 16px;
 }
 
@@ -146,6 +146,88 @@
 
 .create-board-card:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* Folder section header in workspace grid */
+.folder-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0 8px;
+    margin-top: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 12px;
+}
+
+.folder-section-header:first-child {
+    margin-top: 0;
+}
+
+.folder-section-click-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.folder-section-click-area:hover .folder-section-name {
+    opacity: 0.8;
+}
+
+.folder-section-toggle {
+    font-family: monospace;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    width: 14px;
+    text-align: center;
+}
+
+.folder-section-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+.folder-section-count {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.folder-section-menu {
+    position: relative;
+    margin-left: auto;
+}
+
+.folder-section-menu-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.folder-section-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+.folder-boards-grid {
+    margin-bottom: 24px;
+}
+
+.workspace-actions-row {
+    margin-top: 24px;
+}
+
+.folder-empty-msg {
+    grid-column: 1 / -1;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    padding: 16px 0;
+    font-style: italic;
 }
 
 /* Responsive adjustments */

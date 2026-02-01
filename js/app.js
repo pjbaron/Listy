@@ -49,6 +49,32 @@ In workspace view, hover over any board card to see the options menu (⋯):
 - Select an image file from your computer
 - The image will be applied as the board background
 
+## Board Folders
+
+Group boards into collapsible folders in both the tab bar and workspace grid view.
+
+### Creating Folders
+- In workspace view, click the "+ Create folder" card
+- Enter a name for your folder
+
+### Moving Boards to Folders
+- In workspace view, click the menu (⋯) on any board card
+- Select "Move to Folder" and pick a folder, create a new one, or choose "None" to ungroup
+
+### Folder Tabs
+- Folders appear in the tab bar with a chevron indicator
+- Click a folder tab to expand/collapse it and show/hide its boards
+- The folder containing the active board is always expanded
+- Click the "..." button on a folder tab for Rename and Delete options
+
+### Folder Sections in Workspace
+- Each folder shows as a section header with its boards grouped below
+- Ungrouped boards appear under "Other Boards" when folders exist
+- Click "..." on a folder section header to rename or delete the folder
+
+### Deleting Folders
+- Deleting a folder does not delete its boards -- they become ungrouped
+
 ## List Management
 
 ### Creating Lists
@@ -264,6 +290,9 @@ function init() {
     appState.settings = StorageManager.loadSettings();
     appState.boards = StorageManager.loadBoards();
     
+    // Reconcile folder data
+    reconcileFolders();
+
     // Set current board index from settings
     if (appState.boards.length > 0) {
         appState.currentBoardIndex = Math.min(
@@ -324,10 +353,22 @@ function setupEventListeners() {
         }
         
         // Close board menus when clicking outside
-        if (!e.target.closest('.board-card-menu')) {
-            document.querySelectorAll('.board-menu-dropdown').forEach(menu => {
+        if (!e.target.closest('.board-menu-btn') && !e.target.closest('#activeBoardMenu')) {
+            const bm = document.getElementById('activeBoardMenu');
+            if (bm) bm.remove();
+        }
+
+        // Close folder section menus when clicking outside
+        if (!e.target.closest('.folder-section-menu')) {
+            document.querySelectorAll('.board-menu-dropdown:not(#activeBoardMenu)').forEach(menu => {
                 menu.classList.add('hidden');
             });
+        }
+
+        // Close folder tab menus when clicking outside
+        if (!e.target.closest('.folder-tab-menu-btn') && !e.target.closest('.folder-tab-menu-dropdown')) {
+            const ftm = document.getElementById('activeFolderTabMenu');
+            if (ftm) ftm.remove();
         }
     });
 
@@ -413,6 +454,19 @@ async function exportData() {
     }
 }
 
+// Reconcile folderOrder with actual board.folder values
+function reconcileFolders() {
+    if (!appState.settings.folderOrder) appState.settings.folderOrder = [];
+    // Add any folder names found on boards but missing from folderOrder
+    appState.boards.forEach(board => {
+        if (board.folder && !appState.settings.folderOrder.includes(board.folder)) {
+            appState.settings.folderOrder.push(board.folder);
+        }
+    });
+    // Remove folder names that have no boards and were not explicitly created
+    // (We keep them -- user may want empty folders. Only remove on explicit delete.)
+}
+
 // Import data from file
 function importData() {
     const input = document.createElement('input');
@@ -433,7 +487,10 @@ function importData() {
             if (confirm(confirmMessage)) {
                 appState.boards = importedBoards;
                 appState.currentBoardIndex = 0;
-                
+
+                // Reconcile folder settings from imported boards
+                reconcileFolders();
+
                 // Save imported data
                 saveData();
                 
@@ -533,24 +590,58 @@ export function updateSettings(newSettings) {
     StorageManager.saveSettings(appState.settings);
 }
 
-// Toggle board menu in workspace view
-function toggleBoardMenu(boardIndex) {
-    const menu = document.getElementById(`boardMenu-${boardIndex}`);
-    if (!menu) return;
-    
-    // Close other open menus
-    document.querySelectorAll('.board-menu-dropdown').forEach(otherMenu => {
-        if (otherMenu !== menu) {
-            otherMenu.classList.add('hidden');
-        }
-    });
-    
-    // Toggle current menu
-    menu.classList.toggle('hidden');
+// Show board menu in workspace view, positioned relative to the button
+function showBoardMenu(boardIndex, anchorBtn) {
+    // Remove any existing board menu
+    const existing = document.getElementById('activeBoardMenu');
+    if (existing) {
+        const wasForSame = existing.dataset.boardIndex === String(boardIndex);
+        existing.remove();
+        if (wasForSame) return; // toggle off
+    }
+
+    const rect = anchorBtn.getBoundingClientRect();
+    const menu = document.createElement('div');
+    menu.className = 'board-menu-dropdown';
+    menu.id = 'activeBoardMenu';
+    menu.dataset.boardIndex = boardIndex;
+    menu.style.position = 'fixed';
+    menu.style.top = rect.bottom + 4 + 'px';
+    menu.style.right = (window.innerWidth - rect.right) + 'px';
+    menu.style.zIndex = '10000';
+    menu.innerHTML = `
+        <button class="board-menu-option" onclick="event.stopPropagation(); renameBoardFromGrid(${boardIndex})">
+            <span class="menu-icon">&#x270F;&#xFE0F;</span>
+            Rename Board
+        </button>
+        <button class="board-menu-option" onclick="event.stopPropagation(); duplicateBoardFromGrid(${boardIndex})">
+            <span class="menu-icon">&#x1F4CB;</span>
+            Duplicate Board
+        </button>
+        <button class="board-menu-option" onclick="event.stopPropagation(); promptMoveBoardToFolder(${boardIndex})">
+            <span class="menu-icon">&#x1F4C1;</span>
+            Move to Folder
+        </button>
+        <div class="menu-divider"></div>
+        <button class="board-menu-option delete-option" onclick="event.stopPropagation(); deleteBoardFromGrid(${boardIndex})">
+            <span class="menu-icon">&#x1F5D1;&#xFE0F;</span>
+            Delete Board
+        </button>
+    `;
+    document.body.appendChild(menu);
+}
+
+// Close any body-level menus
+function closeBodyMenus() {
+    const bm = document.getElementById('activeBoardMenu');
+    if (bm) bm.remove();
+    const ftm = document.getElementById('activeFolderTabMenu');
+    if (ftm) ftm.remove();
 }
 
 // Board management functions for workspace grid
 function deleteBoardFromGrid(boardIndex) {
+    closeBodyMenus();
     const success = BoardManager.deleteBoard(boardIndex);
     if (success) {
         triggerAutoSave();
@@ -558,6 +649,7 @@ function deleteBoardFromGrid(boardIndex) {
 }
 
 function renameBoardFromGrid(boardIndex) {
+    closeBodyMenus();
     const success = BoardManager.renameBoard(boardIndex);
     if (success) {
         triggerAutoSave();
@@ -565,6 +657,7 @@ function renameBoardFromGrid(boardIndex) {
 }
 
 function duplicateBoardFromGrid(boardIndex) {
+    closeBodyMenus();
     const success = BoardManager.duplicateBoard(boardIndex);
     if (success) {
         triggerAutoSave();
@@ -644,10 +737,20 @@ window.duplicateBoard = (...args) => {
 };
 
 // Board menu functions for workspace
-window.toggleBoardMenu = toggleBoardMenu;
+window.showBoardMenu = showBoardMenu;
 window.deleteBoardFromGrid = deleteBoardFromGrid;
 window.renameBoardFromGrid = renameBoardFromGrid;
 window.duplicateBoardFromGrid = duplicateBoardFromGrid;
+
+// Folder management functions
+window.createFolder = () => BoardManager.createFolder();
+window.renameFolder = (name) => BoardManager.renameFolder(name);
+window.deleteFolder = (name) => BoardManager.deleteFolder(name);
+window.moveBoardToFolder = (boardIndex, folderName) => BoardManager.moveBoardToFolder(boardIndex, folderName);
+window.promptMoveBoardToFolder = (boardIndex) => {
+    closeBodyMenus();
+    BoardManager.promptMoveBoardToFolder(boardIndex);
+};
 
 window.createCard = (...args) => {
     CardManager.createCard(...args);

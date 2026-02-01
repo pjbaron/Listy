@@ -1,6 +1,10 @@
 import { appState } from './app.js';
 import { UIManager } from './ui-manager.js';
 
+function triggerAutoSave() {
+    if (appState.autoSave) appState.autoSave();
+}
+
 export class BoardManager {
     // Create a new board
     static createBoard() {
@@ -229,6 +233,141 @@ export class BoardManager {
                 UIManager.renderBoard();
             };
             reader.readAsDataURL(file);
+        }
+    }
+
+    // --- Folder Management ---
+
+    // Create a new folder
+    static createFolder() {
+        const name = prompt("Folder name:");
+        if (!name || !name.trim()) return;
+        const trimmed = name.trim();
+
+        if (!appState.settings.folderOrder) {
+            appState.settings.folderOrder = [];
+        }
+        if (appState.settings.folderOrder.includes(trimmed)) {
+            alert(`A folder named "${trimmed}" already exists.`);
+            return;
+        }
+        appState.settings.folderOrder.push(trimmed);
+        if (!appState.settings.expandedFolders) {
+            appState.settings.expandedFolders = {};
+        }
+        appState.settings.expandedFolders[trimmed] = true;
+        UIManager.renderBoardTabs();
+        UIManager.renderBoardsGrid();
+        triggerAutoSave();
+    }
+
+    // Rename a folder
+    static renameFolder(oldName) {
+        const newName = prompt("New folder name:", oldName);
+        if (!newName || !newName.trim() || newName.trim() === oldName) return;
+        const trimmed = newName.trim();
+
+        if (appState.settings.folderOrder.includes(trimmed)) {
+            alert(`A folder named "${trimmed}" already exists.`);
+            return;
+        }
+
+        // Update folderOrder
+        const idx = appState.settings.folderOrder.indexOf(oldName);
+        if (idx !== -1) appState.settings.folderOrder[idx] = trimmed;
+
+        // Update expandedFolders
+        if (appState.settings.expandedFolders) {
+            if (oldName in appState.settings.expandedFolders) {
+                appState.settings.expandedFolders[trimmed] = appState.settings.expandedFolders[oldName];
+                delete appState.settings.expandedFolders[oldName];
+            }
+        }
+
+        // Update all boards in this folder
+        appState.boards.forEach(board => {
+            if (board.folder === oldName) {
+                board.folder = trimmed;
+            }
+        });
+
+        UIManager.renderBoardTabs();
+        UIManager.renderBoardsGrid();
+        triggerAutoSave();
+    }
+
+    // Delete a folder (boards become ungrouped)
+    static deleteFolder(folderName) {
+        if (!confirm(`Delete folder "${folderName}"? Boards inside will become ungrouped.`)) return;
+
+        // Remove from folderOrder
+        const idx = appState.settings.folderOrder.indexOf(folderName);
+        if (idx !== -1) appState.settings.folderOrder.splice(idx, 1);
+
+        // Remove from expandedFolders
+        if (appState.settings.expandedFolders) {
+            delete appState.settings.expandedFolders[folderName];
+        }
+
+        // Ungroup boards
+        appState.boards.forEach(board => {
+            if (board.folder === folderName) {
+                board.folder = null;
+            }
+        });
+
+        UIManager.renderBoardTabs();
+        UIManager.renderBoardsGrid();
+        triggerAutoSave();
+    }
+
+    // Move a board into a folder (or null to ungroup)
+    static moveBoardToFolder(boardIndex, folderName) {
+        appState.boards[boardIndex].folder = folderName || null;
+        UIManager.renderBoardTabs();
+        UIManager.renderBoardsGrid();
+        triggerAutoSave();
+    }
+
+    // Prompt user to pick a folder for a board
+    static promptMoveBoardToFolder(boardIndex) {
+        const folders = appState.settings.folderOrder || [];
+        const board = appState.boards[boardIndex];
+
+        let options = folders.map((f, i) => `${i + 1}. ${f}`);
+        options.push(`${folders.length + 1}. + New folder...`);
+        options.push(`${folders.length + 2}. None (ungrouped)`);
+
+        const currentFolder = board.folder ? ` (currently in "${board.folder}")` : ' (currently ungrouped)';
+        const choice = prompt(
+            `Move "${board.name}" to folder${currentFolder}:\n\n${options.join('\n')}\n\nEnter number:`
+        );
+
+        if (choice === null) return;
+        const num = parseInt(choice);
+        if (isNaN(num) || num < 1 || num > folders.length + 2) {
+            alert('Invalid selection.');
+            return;
+        }
+
+        if (num <= folders.length) {
+            // Existing folder
+            BoardManager.moveBoardToFolder(boardIndex, folders[num - 1]);
+        } else if (num === folders.length + 1) {
+            // New folder
+            const name = prompt("New folder name:");
+            if (!name || !name.trim()) return;
+            const trimmed = name.trim();
+            if (!appState.settings.folderOrder) appState.settings.folderOrder = [];
+            if (!appState.settings.folderOrder.includes(trimmed)) {
+                appState.settings.folderOrder.push(trimmed);
+                if (!appState.settings.expandedFolders) appState.settings.expandedFolders = {};
+                appState.settings.expandedFolders[trimmed] = true;
+            }
+            BoardManager.moveBoardToFolder(boardIndex, trimmed);
+        } else {
+            // None
+            BoardManager.moveBoardToFolder(boardIndex, null);
         }
     }
 }
