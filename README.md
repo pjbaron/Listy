@@ -34,6 +34,24 @@ In workspace view, hover over any board card to see the options menu (⋯):
 - Backgrounds persist in current session and localStorage
 - Not included in exports to keep file sizes small
 
+## Board Folders
+
+Group boards into collapsible folders in the tab bar and workspace grid.
+
+### Creating Folders
+- Click "+ Create folder" in workspace view
+- Enter a name for the folder
+
+### Moving Boards to Folders
+- In workspace view, click the menu (⋯) on a board card and select "Move to Folder"
+- Pick an existing folder, create a new one, or choose "None" to ungroup
+
+### Folder Controls
+- Click a folder name in the tab bar or workspace to expand/collapse its boards
+- Click "..." on a folder for rename and delete options
+- Deleting a folder ungroups its boards (does not delete them)
+- Folder state and expand/collapse preferences persist across sessions
+
 ## List Management
 
 ### Creating Lists
